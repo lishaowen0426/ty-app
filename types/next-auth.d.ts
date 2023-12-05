@@ -1,8 +1,4 @@
-import NextAuth, { DefaultUser } from "next-auth";
+import { DefaultSession, User as AuthUser } from "next-auth/types";
+import { User as PrismaUser } from "@prisma/client";
 
-declare module "next-auth" {
-  interface User extends DefaultUser {
-    id: number;
-    phone: string;
-  }
-}
+declare module "next-auth/types" {}
