@@ -50,21 +50,26 @@ export const {
   },
   callbacks: {
     async jwt({ token, user, account, profile, isNewUser }) {
-      console.log("jwt");
-      console.log(user);
-      console.log(token);
-      console.log(account);
-      console.log(profile);
       if (user) {
+        token.createdAt = user.createdAt;
+        token.email = user.email;
+        token.firstname = user.firstname;
+        token.lastname = user.lastname;
+        token.password = user.password;
+        token.phone = user.phone;
+        token.role = user.role;
       }
 
       return token;
     },
     async session({ session, token, user }) {
-      console.log("session");
-      console.log(session);
-      console.log(token);
-      console.log(user);
+      session.user.createdAt = token.createdAt;
+      session.user.email = token.email ?? "";
+      session.user.firstname = token.firstname;
+      session.user.lastname = token.lastname;
+      session.user.password = token.password;
+      session.user.phone = token.phone;
+      session.user.role = token.role;
 
       return session;
     },
