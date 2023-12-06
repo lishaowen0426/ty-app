@@ -1,4 +1,3 @@
-import SigninButton from "@/components/ui/SigninButton";
-export default function Home() {
-  return <SigninButton />;
+export default function Root() {
+  return <div>root</div>;
 }
