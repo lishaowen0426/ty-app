@@ -1,26 +1,64 @@
 "use client";
-import { Button, ButtonProps } from "@/components/ui/button";
+import { Button, ButtonProps, buttonVariants } from "@/components/ui/button";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Send, SendHorizontal } from "lucide-react";
 import clsx from "clsx";
 import { cn } from "@/lib/utils";
-import { sign } from "crypto";
+import Link from "next/link";
 
 export const IconButton = ({ className, ...props }: ButtonProps) => {
   return <Button className={cn("gap-4", className)} {...props} />;
 };
 
-export const RegisterButton = (props: ButtonProps) => {
+interface LinkButtonProps {
+  link: string;
+  label: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
+}
+
+export const IconButtonLink = ({
+  link,
+  icon,
+  label,
+  className,
+}: LinkButtonProps) => {
   return (
-    <IconButton {...props}>
-      <Send />
-      注册
-    </IconButton>
+    <Link
+      className={cn(buttonVariants({ variant: "outline" }), "gap-4", className)}
+      href={link}
+    >
+      {icon}
+      {label}
+    </Link>
   );
 };
-export const SigninButton = (props: ButtonProps) => {
+
+export type RegisterButtonProps = ButtonProps;
+
+export const RegisterButton = ({ className, ...props }: ButtonProps) => {
+  if (props.type) {
+    return (
+      <IconButton {...props} className={className}>
+        <Send />
+        注册
+      </IconButton>
+    );
+  } else {
+    return (
+      <IconButtonLink
+        icon={<Send />}
+        link="/auth/register"
+        label="注册"
+        className={cn("bg-black text-white", className)}
+      />
+    );
+  }
+};
+
+export const SigninButton = ({ variant, ...props }: ButtonProps) => {
   return (
-    <IconButton variant="outline" {...props}>
+    <IconButton variant={variant ?? "outline"} {...props}>
       <SendHorizontal />
       登陆
     </IconButton>
@@ -45,7 +83,7 @@ export function AuthButton() {
         <Button variant="link">
           {session.user.lastname + " " + session.user.firstname}
         </Button>
-        <SignoutButton />
+        <SignoutButton onClick={() => signOut()} />
       </div>
     );
   } else {

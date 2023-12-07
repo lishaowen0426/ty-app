@@ -18,6 +18,7 @@ export const {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
+        console.log("cred");
         console.log(credentials);
         if (!credentials?.phone || !credentials?.password) {
           return null;
@@ -39,7 +40,7 @@ export const {
       },
     }),
   ],
-  secret: "gdFpU+5p2zZB0EXdlbNGs6zTD29CRj7JUM00ZzK350U=",
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     // Seconds - How long until an idle session expires and is no longer valid.
@@ -51,7 +52,6 @@ export const {
   callbacks: {
     async jwt({ token, user, account, profile, isNewUser }) {
       if (user) {
-        token.createdAt = user.createdAt;
         token.email = user.email;
         token.firstname = user.firstname;
         token.lastname = user.lastname;
@@ -63,7 +63,6 @@ export const {
       return token;
     },
     async session({ session, token, user }) {
-      session.user.createdAt = token.createdAt;
       session.user.email = token.email ?? "";
       session.user.firstname = token.firstname;
       session.user.lastname = token.lastname;
@@ -72,6 +71,13 @@ export const {
       session.user.role = token.role;
 
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
 });

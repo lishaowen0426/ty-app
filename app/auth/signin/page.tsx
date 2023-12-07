@@ -1,6 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 import {
   Form,
   FormControl,
@@ -19,74 +21,72 @@ import {
 } from "@/components/ui/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn, signOut } from "next-auth/react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, SubmitErrorHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { RegisterButton } from "@/components/ui/AuthButton";
+import { SigninButton } from "@/components/ui/AuthButton";
+import AuthCard, { AuthCardProps } from "@/components/ui/AuthCard";
+import { useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+import classes from "./Signin.module.css";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+interface AlertProps {
+  open: boolean;
+}
+
+const SigninFailedAlert = ({ className }: { className?: string }) => {
+  return (
+    <Alert variant="destructive" className={cn("w-[80%]", className)}>
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>错误</AlertTitle>
+      <AlertDescription>登陆信息错误</AlertDescription>
+    </Alert>
+  );
+};
 
 export default function Signin() {
+  const searchParams = useSearchParams();
+  const isSigninFailed = !!searchParams.get("error");
+  const [opaque, setOpage] = useState(isSigninFailed);
+  console.log(opaque);
+
   const formSchema = z.object({
-    phone: z.string({ required_error: "请输入手机" }),
-    firstname: z.string({ required_error: "请填入名" }).min(1),
-    lastname: z.string({ required_error: "请填入姓" }).min(1),
+    phone: z
+      .string({ required_error: "请输入手机" })
+      .length(11, { message: "手机号码格式错误" }),
     password: z
       .string({ required_error: "请输入密码", description: "密码为6到20位" })
-      .min(6)
-      .max(20),
-    email: z.string({ required_error: "请输入邮箱" }).email(),
-    role: z.enum(["Student", "Teacher", "Admin"]),
+      .min(6, { message: "密码长度须大于等于6" })
+      .max(20, { message: "密码长度须小于等于20" }),
   });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
-  const b = (
-    <Button
-      onClick={async () => {
-        await signIn("credentials", {
-          phone: "133",
-          password: "133",
-          redirect: true,
-          callbackUrl: "/home",
-        });
-      }}
-    >
-      hello
-    </Button>
-  );
+  const onSubmitValid: SubmitHandler<z.infer<typeof formSchema>> = async (
+    data,
+    e
+  ) => {
+    e?.preventDefault();
 
-  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = (data) =>
-    console.log(data);
+    try {
+      await signIn("credentials", {
+        phone: data.phone,
+        password: data.password,
+        redirect: true,
+        callbackUrl: "/home",
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  const onSubmitInValid: SubmitErrorHandler<
+    z.infer<typeof formSchema>
+  > = async (data, e) => {};
   const f = (
     <Form {...form}>
-      <form onSubmit={() => form.handleSubmit(onSubmit)}>
-        <div className="flex flex-nowrap w-full justify-between gap-5">
-          <FormField
-            control={form.control}
-            name="lastname"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>姓</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="firstname"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>名</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+      <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
         <FormField
           control={form.control}
           name="phone"
@@ -100,19 +100,7 @@ export default function Signin() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>邮箱</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <FormField
           control={form.control}
           name="password"
@@ -127,17 +115,40 @@ export default function Signin() {
           )}
         />
         <div className="flex justify-center">
-          <RegisterButton type="submit" className="mt-5 w-2/3" />
+          <SigninButton type="submit" className="mt-5 w-2/3" />
         </div>
       </form>
     </Form>
   );
+  const Opaque = () => {
+    return (
+      <div
+        className={cn(classes["alpha"], "absolute w-full h-full top-0 left-0")}
+      />
+    );
+  };
+
+  const removeOpaque = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.type == "submit") {
+      return;
+    }
+
+    if (opaque) {
+      setOpage(!opaque);
+    }
+  };
   return (
-    <Card className="w-[500px] h-[500px]">
-      <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
-        <CardTitle>注册</CardTitle>
-      </CardHeader>
-      <CardContent>{f}</CardContent>
-    </Card>
+    <div>
+      <AuthCard className="h-[350px] relative" onClick={removeOpaque}>
+        <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
+          <CardTitle>登陆</CardTitle>
+        </CardHeader>
+        <CardContent>{f}</CardContent>
+        {opaque && <Opaque />}
+        {opaque && (
+          <SigninFailedAlert className="absolute top-[40%] left-[10%]" />
+        )}
+      </AuthCard>
+    </div>
   );
 }
