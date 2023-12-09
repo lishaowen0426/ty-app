@@ -31,17 +31,22 @@ import { z } from "zod";
 import { RegisterButton } from "@/components/ui/AuthButton";
 import AuthCard, { AuthCardProps } from "@/components/ui/AuthCard";
 import { registerSchema } from "@/app/api/register/route";
+import { User, isPrismaError, PrismaErrorMsg } from "@/lib/prisma";
+import { AlertOverlay } from "@/components/ui/DiaglogOverlay";
+import { useState } from "react";
 
-export default function Signin() {
+export default function RegisterCard() {
+  const [registerErr, setRegisterErr] = useState<boolean>(false);
+  const [errMsg, setErrMsg] = useState<string>("");
   const formSchema = z.object(registerSchema);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-
   const onSubmitValid: SubmitHandler<z.infer<typeof formSchema>> = async (
     data,
     e
   ) => {
+    e?.preventDefault();
     console.log(data);
     console.log(e);
     try {
@@ -53,16 +58,30 @@ export default function Signin() {
         body: JSON.stringify(data),
       }).then((resp) => resp.json());
       if (resp.error) {
-        console.log(resp.error);
+        setRegisterErr(true);
+        let e = resp.error;
+        if (isPrismaError(e)) {
+          setErrMsg(PrismaErrorMsg(e));
+          console.log(errMsg);
+        }
       } else {
+        //signin and redirect
+        await signIn("credentials", {
+          phone: data.phone,
+          password: data.password,
+          redirect: true,
+          callbackUrl: "/home",
+        });
       }
     } catch (e) {
+      setRegisterErr(true);
       console.log(e);
     }
   };
   const onSubmitInValid: SubmitErrorHandler<
     z.infer<typeof formSchema>
   > = async (data, e) => {
+    e?.preventDefault();
     console.log(data);
     console.log(e);
   };
@@ -164,11 +183,17 @@ export default function Signin() {
     </Form>
   );
   return (
-    <AuthCard className="h-[550px]">
+    <AuthCard className="h-[550px] w-[25rem] relative left-1/2 -translate-x-1/2">
       <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
         <CardTitle>注册</CardTitle>
       </CardHeader>
       <CardContent>{f}</CardContent>
+      <AlertOverlay
+        title="注册失败"
+        message={errMsg}
+        open={registerErr}
+        setOpen={setRegisterErr}
+      />
     </AuthCard>
   );
 }

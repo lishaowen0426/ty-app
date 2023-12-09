@@ -27,29 +27,11 @@ import { SigninButton } from "@/components/ui/AuthButton";
 import AuthCard, { AuthCardProps } from "@/components/ui/AuthCard";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import classes from "./Signin.module.css";
+import { AlertOverlay } from "./DiaglogOverlay";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-interface AlertProps {
-  open: boolean;
-}
-
-const SigninFailedAlert = ({ className }: { className?: string }) => {
-  return (
-    <Alert variant="destructive" className={cn("w-[80%]", className)}>
-      <AlertCircle className="h-4 w-4" />
-      <AlertTitle>错误</AlertTitle>
-      <AlertDescription>登陆信息错误</AlertDescription>
-    </Alert>
-  );
-};
-
-export default function Signin() {
+export default function SigninCard() {
   const searchParams = useSearchParams();
-  const isSigninFailed = !!searchParams.get("error");
-  const [opaque, setOpage] = useState(isSigninFailed);
-  console.log(opaque);
+  const [signinErr, setSigninErr] = useState<boolean>(false);
 
   const formSchema = z.object({
     phone: z
@@ -71,19 +53,22 @@ export default function Signin() {
     e?.preventDefault();
 
     try {
-      await signIn("credentials", {
+      let resp = await signIn("credentials", {
         phone: data.phone,
         password: data.password,
-        redirect: true,
-        callbackUrl: "/home",
+        redirect: false,
       });
+      console.log(resp);
     } catch (e) {
+      setSigninErr(true);
       console.log(e);
     }
   };
   const onSubmitInValid: SubmitErrorHandler<
     z.infer<typeof formSchema>
-  > = async (data, e) => {};
+  > = async (data, e) => {
+    e?.preventDefault();
+  };
   const f = (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
@@ -120,35 +105,19 @@ export default function Signin() {
       </form>
     </Form>
   );
-  const Opaque = () => {
-    return (
-      <div
-        className={cn(classes["alpha"], "absolute w-full h-full top-0 left-0")}
-      />
-    );
-  };
 
-  const removeOpaque = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.type == "submit") {
-      return;
-    }
-
-    if (opaque) {
-      setOpage(!opaque);
-    }
-  };
   return (
-    <div>
-      <AuthCard className="h-[350px] relative" onClick={removeOpaque}>
-        <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
-          <CardTitle>登陆</CardTitle>
-        </CardHeader>
-        <CardContent>{f}</CardContent>
-        {opaque && <Opaque />}
-        {opaque && (
-          <SigninFailedAlert className="absolute top-[40%] left-[10%]" />
-        )}
-      </AuthCard>
-    </div>
+    <AuthCard className="h-[350px] w-[20rem] relative left-1/2 -translate-x-1/2">
+      <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
+        <CardTitle>登陆</CardTitle>
+      </CardHeader>
+      <CardContent>{f}</CardContent>
+      <AlertOverlay
+        open={signinErr}
+        setOpen={setSigninErr}
+        title="注册失败"
+        message="用户名或密码错误"
+      />
+    </AuthCard>
   );
 }

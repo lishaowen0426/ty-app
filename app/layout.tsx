@@ -11,16 +11,7 @@ export default function RootLayout({
 }) {
   return (
     <html className="h-screen" lang="en">
-      <body
-        className={cn(
-          "h-full m-0 grid",
-          inter.className,
-          "grid-cols-12",
-          "grid-rows-10"
-        )}
-      >
-        {children}
-      </body>
+      <body className={cn("h-full m-0", inter.className)}>{children}</body>
     </html>
   );
 }

@@ -5,28 +5,44 @@ import { Send, SendHorizontal } from "lucide-react";
 import clsx from "clsx";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-
+import { redirect } from "next/navigation";
 export const IconButton = ({ className, ...props }: ButtonProps) => {
   return <Button className={cn("gap-4", className)} {...props} />;
 };
 
 interface LinkButtonProps {
   link: string;
+  variant?:
+    | "outline"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | "default";
   label: React.ReactNode;
   icon?: React.ReactNode;
   className?: string;
+  scroll?: boolean;
 }
 
 export const IconButtonLink = ({
   link,
   icon,
   label,
+  variant,
   className,
+  scroll,
 }: LinkButtonProps) => {
   return (
     <Link
-      className={cn(buttonVariants({ variant: "outline" }), "gap-4", className)}
+      className={cn(
+        buttonVariants({ variant: variant ?? "outline" }),
+        "gap-4",
+        className
+      )}
       href={link}
+      scroll={scroll}
     >
       {icon}
       {label}
@@ -50,19 +66,36 @@ export const RegisterButton = ({ className, ...props }: ButtonProps) => {
         icon={<Send />}
         link="/auth/register"
         label="注册"
+        scroll={false}
         className={cn("bg-black text-white", className)}
       />
     );
   }
 };
 
-export const SigninButton = ({ variant, ...props }: ButtonProps) => {
-  return (
-    <IconButton variant={variant ?? "outline"} {...props}>
-      <SendHorizontal />
-      登陆
-    </IconButton>
-  );
+export const SigninButton = ({ variant, className, ...props }: ButtonProps) => {
+  if (props.type) {
+    return (
+      <IconButton
+        variant={variant ?? "outline"}
+        {...props}
+        className={className}
+      >
+        <Send />
+        登录
+      </IconButton>
+    );
+  } else {
+    return (
+      <IconButtonLink
+        variant={variant ?? "outline"}
+        icon={<SendHorizontal />}
+        link="/auth/signin"
+        scroll={false}
+        label="登录"
+      />
+    );
+  }
 };
 
 export const SignoutButton = (props: ButtonProps) => {
@@ -76,7 +109,7 @@ const UserInfo = (props: ButtonProps) => {
 export function AuthButton() {
   const { data: session, status } = useSession();
   console.log(session);
-  const container = cn("flex", "justify-between", "gap-5");
+  const container = cn("flex", "justify-between", "w-fit", "gap-5");
   if (session && status == "authenticated") {
     return (
       <div className={container}>
@@ -89,7 +122,7 @@ export function AuthButton() {
   } else {
     return (
       <div className={container}>
-        <SigninButton onClick={() => signIn()} />
+        <SigninButton />
         <RegisterButton />
       </div>
     );

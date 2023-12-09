@@ -74,9 +74,15 @@ export const {
     },
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
+      console.log("url");
+      console.log(url);
+      console.log(baseUrl);
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
+      else if (new URL(url).origin === baseUrl) {
+        console.log("here");
+        return url;
+      }
+
       return baseUrl;
     },
   },

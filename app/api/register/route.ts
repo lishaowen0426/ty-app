@@ -34,6 +34,7 @@ const registerFn = async (user: z.infer<typeof schema>) => {
       phone: user.phone,
     },
   });
+  await prisma.$disconnect();
   return created;
 };
 const HOST = (process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "");
@@ -43,12 +44,6 @@ export async function POST(request: NextRequest) {
   try {
     const user = schema.parse(await request.json());
     const created = await registerFn(user);
-
-    //fetch csrf
-    const resp = await fetch(CSRF_URL, {
-      method: "GET",
-    });
-    console.log(await resp.json());
 
     return NextResponse.json({ created: created }, { status: 200 });
   } catch (e) {
