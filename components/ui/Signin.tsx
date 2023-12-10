@@ -44,6 +44,10 @@ export default function SigninCard() {
   });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      phone: "",
+      password: "",
+    },
   });
 
   const onSubmitValid: SubmitHandler<z.infer<typeof formSchema>> = async (
@@ -58,6 +62,7 @@ export default function SigninCard() {
         password: data.password,
         redirect: false,
       });
+      console.log("signin success resp");
       console.log(resp);
     } catch (e) {
       setSigninErr(true);

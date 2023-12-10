@@ -9,6 +9,10 @@ declare module "next-auth" {
   }
 }
 
+declare module "next-auth/jwt" {
+  type P = Omit<PrismaUser, "id">;
+  export interface JWT extends P {}
+}
 declare module "@auth/core/jwt" {
   type P = Omit<PrismaUser, "id">;
   export interface JWT extends P {}

@@ -41,6 +41,14 @@ export default function RegisterCard() {
   const formSchema = z.object(registerSchema);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      phone: "",
+      role: "Student",
+      password: "",
+      firstname: "",
+      lastname: "",
+      email: "",
+    },
   });
   const onSubmitValid: SubmitHandler<z.infer<typeof formSchema>> = async (
     data,
