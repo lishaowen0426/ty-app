@@ -1,38 +1,45 @@
 import { User } from "next-auth";
 import { PrismaClient } from "@prisma/client";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import EmailProvider from "next-auth/providers/email";
 import { z } from "zod";
+import { use } from "react";
+
+const prisma = new PrismaClient();
 
 export const handlers = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        phone: { label: "Phone", type: "text" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        console.log("cred");
-        console.log(credentials);
-        if (!credentials?.phone || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         const Cred = z.object({
-          phone: z.string(),
+          email: z.string(),
           password: z.string(),
         });
 
         try {
           const u = Cred.parse(credentials);
-          const user = await login(u.phone, u.password);
+          const user = await login(u.email, u.password);
           return user;
         } catch (e) {
           console.log(e);
           return null;
         }
       },
+    }),
+    EmailProvider({
+      async sendVerificationRequest({ identifier: email, url, expires }) {},
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -48,30 +55,22 @@ export const handlers = NextAuth({
     async jwt({ token, user, account, profile, isNewUser }) {
       if (user) {
         token.email = user.email;
-        token.firstname = user.firstname;
-        token.lastname = user.lastname;
-        token.password = user.password;
-        token.phone = user.phone;
-        token.role = user.role;
+        token.name = user.name;
+        token.id = user.id;
       }
 
       return token;
     },
     async session({ session, token, user }) {
       session.user.email = token.email ?? "";
-      session.user.firstname = token.firstname;
-      session.user.lastname = token.lastname;
-      session.user.password = token.password;
-      session.user.phone = token.phone;
-      session.user.role = token.role;
+      session.user.id = token.id;
+      session.user.emailVerified = token.emailVerified;
 
       return session;
     },
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
-      console.log("url");
-      console.log(url);
-      console.log(baseUrl);
+
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       else if (new URL(url).origin === baseUrl) {
         return url;
@@ -82,22 +81,17 @@ export const handlers = NextAuth({
   },
 });
 
-const prisma = new PrismaClient();
+type LoginFn = (email: string, password: string) => Promise<User>;
 
-type LoginFn = (phone: string, password: string) => Promise<User>;
-
-const login: LoginFn = async (phone: string, password: string) => {
+const login: LoginFn = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({
     where: {
-      phone: phone,
+      email: email,
     },
   });
 
   if (user && password == user.password) {
     user.password = "";
-    return {
-      ...user,
-      id: user.id.toString(),
-    };
+    return user;
   } else throw new Error("User not found");
 };

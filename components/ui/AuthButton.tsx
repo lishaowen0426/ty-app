@@ -108,14 +108,11 @@ const UserInfo = (props: ButtonProps) => {
 
 export function AuthButton() {
   const { data: session, status } = useSession();
-  console.log(session);
   const container = cn("flex", "justify-between", "w-fit", "gap-5");
   if (session && status == "authenticated") {
     return (
       <div className={container}>
-        <Button variant="link">
-          {session.user.lastname + " " + session.user.firstname}
-        </Button>
+        <Button variant="link">{session.user.name}</Button>
         <SignoutButton onClick={() => signOut()} />
       </div>
     );

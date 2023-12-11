@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 export const registerSchema = {
-  phone: z
-    .string({ required_error: "请输入手机" })
-    .length(11, { message: "手机号码格式错误" }),
+  email: z
+    .string({ required_error: "请输入邮箱" })
+    .email({ message: "邮箱格式错误" }),
   firstname: z.string({ required_error: "请填入名" }).min(1),
   lastname: z.string({ required_error: "请填入姓" }).min(1),
   password: z
     .string({ required_error: "请输入密码", description: "密码为6到20位" })
     .min(6, { message: "密码长度须大于等于6" })
     .max(20, { message: "密码长度须小于等于20" }),
-  email: z
-    .string({ required_error: "请输入邮箱" })
-    .email({ message: "邮箱格式错误" }),
-  role: z.enum(["Student", "Teacher", "Admin"], {
-    required_error: "请输入你的角色",
-  }),
 };
 
 const schema = z.object(registerSchema);
@@ -27,11 +21,8 @@ const registerFn = async (user: z.infer<typeof schema>) => {
   const created = await prisma.user.create({
     data: {
       email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
+      name: user.lastname + user.firstname,
       password: user.password,
-      role: user.role,
-      phone: user.phone,
     },
   });
   await prisma.$disconnect();

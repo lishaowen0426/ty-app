@@ -29,7 +29,7 @@ import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
 
-export default function SigninCard() {
+export default function EmailCard() {
   const searchParams = useSearchParams();
   const [signinErr, setSigninErr] = useState<boolean>(false);
 
@@ -37,16 +37,11 @@ export default function SigninCard() {
     email: z
       .string({ required_error: "请输入邮箱" })
       .email({ message: "邮箱格式错误" }),
-    password: z
-      .string({ required_error: "请输入密码", description: "密码为6到20位" })
-      .min(6, { message: "密码长度须大于等于6" })
-      .max(20, { message: "密码长度须小于等于20" }),
   });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
@@ -57,13 +52,6 @@ export default function SigninCard() {
     e?.preventDefault();
 
     try {
-      let resp = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-      console.log("signin success resp");
-      console.log(resp);
     } catch (e) {
       setSigninErr(true);
       console.log(e);
@@ -91,19 +79,6 @@ export default function SigninCard() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>密码</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div className="flex justify-center">
           <SigninButton type="submit" className="mt-5 w-2/3" />
         </div>
@@ -112,7 +87,7 @@ export default function SigninCard() {
   );
 
   return (
-    <AuthCard className="h-[350px] w-[20rem] relative left-1/2 -translate-x-1/2">
+    <AuthCard className="h-[250px] w-[20rem] relative left-1/2 -translate-x-1/2">
       <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
         <CardTitle>登陆</CardTitle>
       </CardHeader>
@@ -121,7 +96,7 @@ export default function SigninCard() {
         open={signinErr}
         setOpen={setSigninErr}
         title="注册失败"
-        message="邮箱或密码错误"
+        message="用户名或密码错误"
       />
     </AuthCard>
   );

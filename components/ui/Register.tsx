@@ -42,8 +42,6 @@ export default function RegisterCard() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      phone: "",
-      role: "Student",
       password: "",
       firstname: "",
       lastname: "",
@@ -75,7 +73,7 @@ export default function RegisterCard() {
       } else {
         //signin and redirect
         await signIn("credentials", {
-          phone: data.phone,
+          email: data.email,
           password: data.password,
           redirect: true,
           callbackUrl: "/home",
@@ -126,19 +124,6 @@ export default function RegisterCard() {
         </div>
         <FormField
           control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>手机</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
@@ -160,27 +145,6 @@ export default function RegisterCard() {
                 <Input {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>角色</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="请选择你的角色" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Student">学生</SelectItem>
-                  <SelectItem value="Teacher">老师</SelectItem>
-                  <SelectItem value="Admin">管理员</SelectItem>
-                </SelectContent>
-              </Select>
             </FormItem>
           )}
         />

@@ -12,5 +12,5 @@ import { cn } from "@/lib/utils";
 export type AuthCardProps = ComponentPropsWithRef<"div">;
 
 export default function AuthCard({ className, ...props }: AuthCardProps) {
-  return <Card className={cn("overflow-y-scroll", className)} {...props} />;
+  return <Card className={cn("overflow-y-auto", className)} {...props} />;
 }
