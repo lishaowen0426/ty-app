@@ -24,10 +24,12 @@ import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TopicProps {
   id: string;
   topic: string;
+  description?: string;
   distance: number;
   created: Date;
   participants: number;
@@ -42,6 +44,8 @@ const mockTopic: TopicProps = {
   id: "7263",
   topic: "一起吃饭吧",
   distance: 256,
+  description:
+    "仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐",
   created: new Date(2023, 12, 11, 19, 40, 35),
   participants: 1762,
 };
@@ -49,12 +53,16 @@ const mockTopic: TopicProps = {
 const Topic = (props: TopicProps) => {
   return (
     <Card className="flex h-20 justify-between">
-      <Avatar className="h-10 translate-y-5 flex-none">
+      <Avatar className="h-10 translate-y-5 flex-none ml-[0.25rem]">
         <AvatarImage src="https://github.com/shadcn.png" />
       </Avatar>
-      <div className="ml-4 mt-[1.2rem] space-y-1 flex-grow">
+      <div className="ml-4 mt-[1.2rem] space-y-2 flex-grow max-w-[10rem]">
         <p className="text-lg font-bold leading-none">{props.topic}</p>
-        <p className="text-sm text-muted-foreground">olivia.martin@email.com</p>
+        {props.description && (
+          <p className="text-sm text-black/40 overflow-x-auto  whitespace-nowrap">
+            {props.description}
+          </p>
+        )}
       </div>
       <div className="flex-none mt-[1.2rem] mr-2 text-xs text-black/40">
         <p className="">距离：{props.distance}米</p>
@@ -127,7 +135,7 @@ const TopicList = () => {
   );
 };
 
-export default function TopicCard() {
+export default function TopicCard({ className }: { className?: string }) {
   const SelectDistance = ({ className }: { className?: string }) => {
     return (
       <Select>
@@ -144,7 +152,7 @@ export default function TopicCard() {
     );
   };
   return (
-    <Card className="h-[60%] p-[0.5rem] pb-0 m-1">
+    <Card className={cn(" p-[0.5rem] pb-0 m-1", className)}>
       <div className="w-full flex justify-between mb-1 mt-1 h-[10%] ">
         <div className="flex space-x-2  ">
           <Input type="text" placeholder="话题" className="w-[6rem] h-[80%]" />
