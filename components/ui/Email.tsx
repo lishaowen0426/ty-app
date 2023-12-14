@@ -25,24 +25,31 @@ import { SubmitHandler, SubmitErrorHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { SigninButton } from "@/components/ui/AuthButton";
 import AuthCard, { AuthCardProps } from "@/components/ui/AuthCard";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
+import { useEffect } from "react";
 
 export default function EmailCard() {
-  const searchParams = useSearchParams();
   const [signinErr, setSigninErr] = useState<boolean>(false);
+  const [userPassword, setUserPassword] = useState<boolean>(false);
 
   const formSchema = z.object({
     email: z
       .string({ required_error: "请输入邮箱" })
       .email({ message: "邮箱格式错误" }),
+    password: z
+      .string({ required_error: "请输入密码" })
+      .min(6, { message: "密码长度大于6" })
+      .max(12, { message: "密码长度小于12" })
+      .optional(),
   });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
     },
+    mode: "onSubmit",
   });
 
   const onSubmitValid: SubmitHandler<z.infer<typeof formSchema>> = async (
@@ -52,6 +59,13 @@ export default function EmailCard() {
     e?.preventDefault();
 
     try {
+      console.log("send email");
+      let resp = await signIn("email", {
+        email: data.email,
+        redirect: false,
+        callbackUrl: "/home",
+      });
+      console.log(resp);
     } catch (e) {
       setSigninErr(true);
       console.log(e);
@@ -78,6 +92,33 @@ export default function EmailCard() {
             </FormItem>
           )}
         />
+        {userPassword && (
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="">
+                <FormLabel>密码</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        <div className="flex justify-end">
+          <Button
+            variant="link"
+            className="underline"
+            onClick={(e) => {
+              e.preventDefault();
+              setUserPassword((userPassword) => !userPassword);
+            }}
+          >
+            使用密码登陆
+          </Button>
+        </div>
 
         <div className="flex justify-center">
           <SigninButton type="submit" className="mt-5 w-2/3" />
@@ -87,7 +128,7 @@ export default function EmailCard() {
   );
 
   return (
-    <AuthCard className="h-[250px] w-[20rem] relative left-1/2 -translate-x-1/2">
+    <AuthCard className="h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2">
       <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
         <CardTitle>登陆</CardTitle>
       </CardHeader>

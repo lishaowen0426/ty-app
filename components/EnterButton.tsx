@@ -4,10 +4,16 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Send, SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const copy = "bg-black text-white absolute top-2/3 left-1/2 -translate-x-1/2";
 
 export default function EnterButton({ className }: { className?: string }) {
+  const { data: session, status, update } = useSession();
+
+  console.log(session);
+  console.log(status);
+
   const router = useRouter();
   const variants = {
     init: {

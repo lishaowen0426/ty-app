@@ -6,8 +6,37 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import EmailProvider from "next-auth/providers/email";
 import { z } from "zod";
 import { use } from "react";
+import { createTransport } from "nodemailer";
 
 const prisma = new PrismaClient();
+
+interface netInterface {
+  address: string;
+  family: string;
+  cidr: string;
+}
+const getLAN = () => {
+  const { exit } = require("node:process");
+  let os = require("os");
+  const en0s = os.networkInterfaces()["en0"] as netInterface[];
+
+  let e: netInterface;
+  let addr: string = "";
+  for (e of en0s) {
+    if (e.family == "IPv4") {
+      addr = e.address;
+      break;
+    }
+  }
+
+  if (addr == "") {
+    exit(1);
+  } else {
+    return addr;
+  }
+};
+
+const LOCALHOST = getLAN();
 
 export const handlers = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -39,7 +68,38 @@ export const handlers = NextAuth({
       },
     }),
     EmailProvider({
-      async sendVerificationRequest({ identifier: email, url, expires }) {},
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: process.env.EMAIL_SERVER_PORT,
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+      sendVerificationRequest(params) {
+        const { identifier, url, provider, theme } = params;
+
+        let url_obj = new URL(url);
+        url_obj.hostname = LOCALHOST as string;
+
+        // NOTE: You are not required to use `nodemailer`, use whatever you want.
+        const transport = createTransport({
+          ...provider.server,
+          secure: false,
+        });
+        transport.verify((error, success) => {
+          if (error) {
+            console.log("SMTP connection failed with " + error);
+          }
+        });
+        const result = transport.sendMail({
+          to: identifier,
+          from: provider.from,
+          subject: `登陆到Distance`,
+          text: url_obj.toString(),
+        });
+      },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -52,6 +112,18 @@ export const handlers = NextAuth({
     signIn: "/auth/signin",
   },
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log(user);
+      if (email?.verificationRequest) {
+        //before we send an email to the user
+        // you can check whether the user is allowed to signin/registration
+        //now, we do nothing
+        return true;
+      } else {
+        //user clicked the link
+        return "/home/profile";
+      }
+    },
     async jwt({ token, user, account, profile, isNewUser }) {
       if (user) {
         token.email = user.email;

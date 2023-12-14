@@ -68,6 +68,7 @@ export default function BubbleList({ className }: { className?: string }) {
             initial="hidden"
             animate="show"
             variants={item}
+            key={c}
           >
             <motion.span
               whileHover={{ scale: 1.1 }}
