@@ -30,9 +30,9 @@ import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
 import { useEffect } from "react";
 
-export default function EmailCard() {
-  const [signinErr, setSigninErr] = useState<boolean>(false);
+export function EmailForm() {
   const [userPassword, setUserPassword] = useState<boolean>(false);
+  const [signinErr, setSigninErr] = useState<boolean>(false);
 
   const formSchema = z.object({
     email: z
@@ -76,29 +76,16 @@ export default function EmailCard() {
   > = async (data, e) => {
     e?.preventDefault();
   };
-  const f = (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>邮箱</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {userPassword && (
+  return (
+    <div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
           <FormField
             control={form.control}
-            name="password"
+            name="email"
             render={({ field }) => (
-              <FormItem className="">
-                <FormLabel>密码</FormLabel>
+              <FormItem>
+                <FormLabel>邮箱</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -106,39 +93,58 @@ export default function EmailCard() {
               </FormItem>
             )}
           />
-        )}
-        <div className="flex justify-end">
-          <Button
-            variant="link"
-            className="underline"
-            onClick={(e) => {
-              e.preventDefault();
-              setUserPassword((userPassword) => !userPassword);
-            }}
-          >
-            使用密码登陆
-          </Button>
-        </div>
+          {userPassword && (
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="">
+                  <FormLabel>密码</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          <div className="flex justify-end">
+            <Button
+              variant="link"
+              className="underline"
+              onClick={(e) => {
+                e.preventDefault();
+                setUserPassword((userPassword) => !userPassword);
+              }}
+            >
+              使用密码登陆
+            </Button>
+          </div>
 
-        <div className="flex justify-center">
-          <SigninButton type="submit" className="mt-5 w-2/3" />
-        </div>
-      </form>
-    </Form>
-  );
-
-  return (
-    <AuthCard className="h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2">
-      <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
-        <CardTitle>登陆</CardTitle>
-      </CardHeader>
-      <CardContent>{f}</CardContent>
+          <div className="flex justify-center">
+            <SigninButton type="submit" className="mt-5 w-2/3" />
+          </div>
+        </form>
+      </Form>
       <AlertOverlay
         open={signinErr}
         setOpen={setSigninErr}
         title="注册失败"
         message="用户名或密码错误"
       />
+    </div>
+  );
+}
+
+export default function EmailCard() {
+  return (
+    <AuthCard className="h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2">
+      <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
+        <CardTitle>登陆</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <EmailForm />
+      </CardContent>
     </AuthCard>
   );
 }

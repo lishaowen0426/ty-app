@@ -11,9 +11,6 @@ const copy = "bg-black text-white absolute top-2/3 left-1/2 -translate-x-1/2";
 export default function EnterButton({ className }: { className?: string }) {
   const { data: session, status, update } = useSession();
 
-  console.log(session);
-  console.log(status);
-
   const router = useRouter();
   const variants = {
     init: {
@@ -33,7 +30,7 @@ export default function EnterButton({ className }: { className?: string }) {
         className
       )}
       onClick={() => {
-        router.push("/auth/signin");
+        router.push("/home/dashboard");
       }}
       variants={variants}
       initial="init"

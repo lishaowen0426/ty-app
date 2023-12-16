@@ -18,6 +18,7 @@ interface netInterface {
 const getLAN = () => {
   const { exit } = require("node:process");
   let os = require("os");
+  console.log(os.networkInterfaces());
   const en0s = os.networkInterfaces()["en0"] as netInterface[];
 
   let e: netInterface;
