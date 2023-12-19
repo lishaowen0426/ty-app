@@ -26,7 +26,9 @@ import { useSession } from "next-auth/react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { EmailForm } from "@/components/ui/Email";
-import DropdownMenuWithDialog from "@/components/ui/DropdownDialog";
+import DropdownMenuWithDialog, {
+  DialogItem,
+} from "@/components/ui/DropdownDialog";
 
 const mockUser: Session["user"] = {
   id: "1",
@@ -51,7 +53,7 @@ const RegPopup = ({
       <DialogContent className={className}>
         <DialogHeader>
           <DialogTitle>有想分享的吗？</DialogTitle>
-          <DialogDescription>注册账号并创建你的话题！</DialogDescription>
+          <DialogDescription>登陆并创建你的话题！</DialogDescription>
         </DialogHeader>
         <EmailForm />
       </DialogContent>
@@ -66,19 +68,21 @@ const UserInfo = ({
   user?: Session["user"];
   className?: string;
 }) => {
+  const trigger = (
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Avatar className="h-12 w-12">
+          {user?.avatar && <AvatarImage src={user.avatar} />}
+          <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
+            Y
+          </AvatarFallback>
+        </Avatar>
+      </Button>
+    </DropdownMenuTrigger>
+  );
   return (
     <div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-12 w-12">
-              {user?.avatar && <AvatarImage src={user.avatar} />}
-              <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
-                Y
-              </AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
+      <DropdownMenuWithDialog trigger={trigger}>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
@@ -92,14 +96,14 @@ const UserInfo = ({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              账户
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              设置
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </DropdownMenuItem>
+            <DialogItem triggerChildren="账户">
+              <DialogTitle>编辑个人账户</DialogTitle>
+              <DialogDescription>Edit this record below.</DialogDescription>
+            </DialogItem>
+            <DialogItem triggerChildren="设置">
+              <DialogTitle>设置</DialogTitle>
+              <DialogDescription>Edit this record below.</DialogDescription>
+            </DialogItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -108,10 +112,9 @@ const UserInfo = ({
             }}
           >
             登出
-            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenuWithDialog>
     </div>
   );
 };
@@ -141,8 +144,7 @@ export default function Dashboard() {
   };
   return (
     <div className="h-full flex flex-col justify-between">
-      <Header />
-      <DropdownMenuWithDialog />
+      <Header user={session?.user} />
       <TopicCard className="h-[70%] mt-auto" />
       <Footer navi={navi} />
     </div>

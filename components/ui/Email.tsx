@@ -29,10 +29,40 @@ import { redirect, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
 import { useEffect } from "react";
+import { IconButton } from "@/components/ui/AuthButton";
+import { Send, SendHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+const LoginButton = () => {
+  return (
+    <IconButton
+      id="signin"
+      type="submit"
+      className="mt-5 w-2/3"
+      variant="outline"
+    >
+      <Send />
+      登陆
+    </IconButton>
+  );
+};
+const RegButton = () => {
+  return (
+    <IconButton id="signup" type="submit" className="mt-5 w-2/3">
+      <SendHorizontal />
+      注册
+    </IconButton>
+  );
+};
 
 export function EmailForm() {
   const [userPassword, setUserPassword] = useState<boolean>(false);
   const [signinErr, setSigninErr] = useState<boolean>(false);
+  const [alertInfo, setAlertInfo] = useState<{
+    title: string;
+    message: string;
+  }>({ title: "", message: "" });
+  const router = useRouter();
 
   const formSchema = z.object({
     email: z
@@ -57,18 +87,104 @@ export function EmailForm() {
     e
   ) => {
     e?.preventDefault();
+    e?.stopPropagation();
+    //console.log(e?.nativeEvent.submitter.id);
 
-    try {
-      console.log("send email");
-      let resp = await signIn("email", {
-        email: data.email,
-        redirect: false,
-        callbackUrl: "/home",
-      });
-      console.log(resp);
-    } catch (e) {
-      setSigninErr(true);
-      console.log(e);
+    if ((e?.nativeEvent as SubmitEvent).submitter!.id == "signup") {
+      try {
+        let resp = await signIn(
+          "email",
+          {
+            email: data.email,
+            redirect: false,
+          },
+          {
+            status: "signup",
+          }
+        );
+        if (resp?.error) {
+          setSigninErr(true);
+          setAlertInfo({
+            title: "邮箱登陆失败",
+            message: "已注册",
+          });
+        } else {
+          setSigninErr(true);
+          setAlertInfo({
+            title: "链接已发送",
+            message: "请检查您的邮箱",
+          });
+        }
+      } catch (e) {
+        setSigninErr(true);
+        console.log(e);
+      }
+    } else {
+      if (userPassword) {
+        try {
+          let resp = await signIn("credentials", {
+            email: data.email,
+            password: data.password,
+            redirect: false,
+          });
+          console.log(resp);
+          if (resp?.error == "set") {
+            setSigninErr(true);
+            setAlertInfo({ title: "密码登陆失败", message: "请先设置密码" });
+          } else if (resp?.error == "found") {
+            setSigninErr(true);
+            setAlertInfo({
+              title: "密码登陆失败",
+              message: "用户不存在请先注册",
+            });
+          } else if (resp?.error == "wrong") {
+            setSigninErr(true);
+            setAlertInfo({
+              title: "密码登陆失败",
+              message: "密码错误",
+            });
+          } else if (resp?.ok) {
+            router.push("/home/dashboard");
+          } else {
+            throw new Error("unrecognized");
+          }
+        } catch (e) {
+          setSigninErr(true);
+          setAlertInfo({
+            title: "密码登陆失败",
+            message: "",
+          });
+        }
+      } else {
+        try {
+          let resp = await signIn(
+            "email",
+            {
+              email: data.email,
+              redirect: false,
+            },
+            {
+              status: "signin",
+            }
+          );
+          console.log(resp);
+          if (resp?.error) {
+            setSigninErr(true);
+            setAlertInfo({
+              title: "邮箱登陆失败",
+              message: "尚未注册",
+            });
+          } else {
+            setSigninErr(true);
+            setAlertInfo({
+              title: "链接已发送",
+              message: "请检查您的邮箱",
+            });
+          }
+        } catch (e) {
+          setSigninErr(true);
+        }
+      }
     }
   };
   const onSubmitInValid: SubmitErrorHandler<
@@ -87,7 +203,10 @@ export function EmailForm() {
               <FormItem>
                 <FormLabel>邮箱</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input
+                    {...field}
+                    placeholder={userPassword ? "" : "发送链接到邮箱"}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,6 +234,7 @@ export function EmailForm() {
               onClick={(e) => {
                 e.preventDefault();
                 setUserPassword((userPassword) => !userPassword);
+                form.clearErrors();
               }}
             >
               使用密码登陆
@@ -122,16 +242,16 @@ export function EmailForm() {
           </div>
 
           <div className="flex justify-center">
-            <SigninButton type="submit" className="mt-5 w-2/3" />
+            <LoginButton />
           </div>
+          {!userPassword && (
+            <div className="flex justify-center">
+              <RegButton />
+            </div>
+          )}
         </form>
       </Form>
-      <AlertOverlay
-        open={signinErr}
-        setOpen={setSigninErr}
-        title="注册失败"
-        message="用户名或密码错误"
-      />
+      <AlertOverlay open={signinErr} setOpen={setSigninErr} {...alertInfo} />
     </div>
   );
 }

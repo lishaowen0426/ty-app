@@ -38,7 +38,7 @@ interface DialogItemProp {
   onOpenChange?: (open: boolean) => void;
 }
 
-const DialogItem = React.forwardRef<
+export const DialogItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
   DialogItemProp
 >((props, forwardedRef) => {
@@ -75,21 +75,19 @@ const DialogItem = React.forwardRef<
 
 DialogItem.displayName = "DialogItem";
 
-export default function DropdownMenuWithDialog() {
+export interface DropdownMenuWithDialogProp {
+  trigger: React.ReactNode;
+  children?: React.ReactNode;
+}
+
+export default function DropdownMenuWithDialog({
+  trigger,
+  children,
+}: DropdownMenuWithDialogProp) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="Button violet">Actions</button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuGroup>
-          <DialogItem triggerChildren="Edit">
-            <DialogTitle>Edit</DialogTitle>
-            <DialogDescription>Edit this record below.</DialogDescription>
-            <p>…</p>
-          </DialogItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      {children}
     </DropdownMenu>
   );
 }
