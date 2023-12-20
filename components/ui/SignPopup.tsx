@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { EmailForm } from "@/components/ui/Email";
-export default function RegPopup({
+export default function SignPopup({
   children,
   className,
 }: {
