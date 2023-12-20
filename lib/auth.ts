@@ -11,34 +11,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 const prisma = new PrismaClient();
 
-interface netInterface {
-  address: string;
-  family: string;
-  cidr: string;
-}
-const getLAN = () => {
-  const { exit } = require("node:process");
-  let os = require("os");
-  const en0s = os.networkInterfaces()["en0"] as netInterface[];
-
-  let e: netInterface;
-  let addr: string = "";
-  for (e of en0s) {
-    if (e.family == "IPv4") {
-      addr = e.address;
-      break;
-    }
-  }
-
-  if (addr == "") {
-    exit(1);
-  } else {
-    return addr;
-  }
-};
-
-const LOCALHOST = getLAN();
-
 export const handlers = async function auth(
   req: NextApiRequest,
   res: NextApiResponse
@@ -99,10 +71,6 @@ export const handlers = async function auth(
         },
         sendVerificationRequest(params) {
           const { identifier, url, provider, theme } = params;
-          console.log(params);
-
-          let url_obj = new URL(url);
-          url_obj.hostname = LOCALHOST as string;
 
           // NOTE: You are not required to use `nodemailer`, use whatever you want.
           const transport = createTransport({
@@ -118,7 +86,7 @@ export const handlers = async function auth(
             to: identifier,
             from: provider.from,
             subject: `登陆到Distance`,
-            text: url_obj.toString(),
+            text: url,
           });
         },
       }),
