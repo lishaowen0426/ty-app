@@ -131,18 +131,26 @@ export const handlers = async function auth(
     },
     pages: {
       signIn: "/auth/signin",
+      error: "/error/auth",
     },
     callbacks: {
       async signIn({ user, account, profile, email, credentials }) {
+        console.log("enter signin");
+        console.log(email);
         if (credentials) {
           return true;
         }
-        const searchUrl = new URL(req.url ?? "");
-        const status = searchUrl.searchParams.get("status");
-        if (status == "signin" && !(await checkUser(user.email!))) {
-          return false;
-        } else if (status == "signup" && (await checkUser(user.email!))) {
-          return false;
+        if (email?.verificationRequest) {
+          //before sending the link to the user
+          const searchUrl = new URL(req.url ?? "");
+          const status = searchUrl.searchParams.get("status");
+          if (status == "signin" && !(await checkUser(user.email!))) {
+            return false;
+          } else if (status == "signup" && (await checkUser(user.email!))) {
+            return false;
+          } else {
+            return true;
+          }
         } else {
           return true;
         }
@@ -171,15 +179,8 @@ export const handlers = async function auth(
         let url_obj = new URL(url);
         let base_obj = new URL(baseUrl);
 
-        if (base_obj.hostname == "localhost") {
-          base_obj.hostname = LOCALHOST as string;
-        }
-        if (url_obj.hostname == "localhost") {
-          url_obj.hostname = LOCALHOST as string;
-        }
-
         if (url_obj.origin == base_obj.origin) {
-          return url_obj.toJSON();
+          return url_obj.toString();
         }
 
         return base_obj.toString();

@@ -29,6 +29,7 @@ import { EmailForm } from "@/components/ui/Email";
 import DropdownMenuWithDialog, {
   DialogItem,
 } from "@/components/ui/DropdownDialog";
+import SignPopup from "@/components/ui/SignPopup";
 
 const mockUser: Session["user"] = {
   id: "1",
@@ -38,27 +39,6 @@ const mockUser: Session["user"] = {
   avatar: "https://github.com/shadcn.png",
   emailVerified: null,
   name: "ll",
-};
-
-const RegPopup = ({
-  children,
-  className,
-}: {
-  children?: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className={className}>
-        <DialogHeader>
-          <DialogTitle>有想分享的吗？</DialogTitle>
-          <DialogDescription>登陆并创建你的话题！</DialogDescription>
-        </DialogHeader>
-        <EmailForm />
-      </DialogContent>
-    </Dialog>
-  );
 };
 
 const UserInfo = ({
@@ -140,7 +120,7 @@ export default function Dashboard() {
         <ChevronRight className="h-4 w-4" /> 创建聊天室
       </Button>
     );
-    return <RegPopup className="w-[20rem]">{B}</RegPopup>;
+    return <SignPopup className="w-[20rem]">{B}</SignPopup>;
   };
   return (
     <div className="h-full flex flex-col justify-between">
