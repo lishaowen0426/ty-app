@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { useRouter } from "next/navigation";
+
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -26,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface TopicProps {
+export interface TopicProps {
   id: string;
   topic: string;
   description?: string;
@@ -50,9 +52,16 @@ const mockTopic: TopicProps = {
   participants: 1762,
 };
 
-const Topic = (props: TopicProps) => {
+const Topic = (props: TopicProps, router: ReturnType<typeof useRouter>) => {
   return (
-    <Card className="flex h-20 justify-between">
+    <Card
+      className="flex h-20 justify-between"
+      onClick={(event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        router.push("/home/room/" + props.id);
+      }}
+    >
       <Avatar className="h-10 translate-y-5 flex-none ml-[0.25rem]">
         <AvatarImage src="https://github.com/shadcn.png" />
       </Avatar>
@@ -77,6 +86,7 @@ const Topic = (props: TopicProps) => {
 };
 
 const TopicList = () => {
+  const router = useRouter();
   const [topicList, setTopicList] = useState<TopicList>({
     items: [],
     hasMore: true,
@@ -90,7 +100,7 @@ const TopicList = () => {
       setTopicList((l) => {
         //fetch topics from api
         const updated: TopicList = {
-          items: l.items.concat(Array(50).fill(Topic(mockTopic))),
+          items: l.items.concat(Array(50).fill(Topic(mockTopic, router))),
           hasMore: true,
         };
         return updated;
@@ -112,7 +122,7 @@ const TopicList = () => {
     setTimeout(() => {
       setTopicList((t) => {
         const updated: TopicList = {
-          items: Array(50).fill(Topic(mockTopic)),
+          items: Array(50).fill(Topic(mockTopic, router)),
           hasMore: true,
         };
         return updated;
