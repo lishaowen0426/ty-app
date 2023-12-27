@@ -94,7 +94,7 @@ export function ChatForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: user.id,
+          creatorId: user.id,
           topic: data.topic,
           tags: data.tags,
         } satisfies ChatCreateReq),
