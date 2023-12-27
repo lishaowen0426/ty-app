@@ -8,8 +8,7 @@ import { z } from "zod";
 import { use } from "react";
 import { createTransport } from "nodemailer";
 import type { NextApiRequest, NextApiResponse } from "next";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export const handlers = async function auth(
   req: NextApiRequest,
@@ -103,8 +102,6 @@ export const handlers = async function auth(
     },
     callbacks: {
       async signIn({ user, account, profile, email, credentials }) {
-        console.log("enter signin");
-        console.log(email);
         if (credentials) {
           return true;
         }
@@ -123,19 +120,23 @@ export const handlers = async function auth(
           return true;
         }
       },
-      async jwt({ token, user, account, profile, isNewUser }) {
+      async jwt({ token, user, account }) {
+        console.log(user);
         if (user) {
           token.email = user.email;
           token.name = user.name;
           token.id = user.id;
+          token.avatar = user.avatar;
         }
 
         return token;
       },
-      async session({ session, token, user }) {
+      async session({ session, token }) {
         session.user.email = token.email ?? "";
         session.user.id = token.id;
         session.user.emailVerified = token.emailVerified;
+        session.user.avatar = token.avatar;
+        session.user.name = token.name ?? "";
 
         return session;
       },

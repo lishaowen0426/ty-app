@@ -59,6 +59,7 @@ const Topic = (props: TopicProps, router: ReturnType<typeof useRouter>) => {
       onClick={(event) => {
         event.stopPropagation();
         event.preventDefault();
+
         router.push("/home/room/" + props.id);
       }}
     >

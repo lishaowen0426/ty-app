@@ -10,15 +10,15 @@ const SERVER =
     throw new Error("chat server undefined");
   })();
 
-console.log(SERVER);
 export default function ChatRoom({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
+    console.log("before");
     const socket = io(SERVER, {
       withCredentials: true,
       auth: {
-        user: session,
+        user: session?.user,
       },
       extraHeaders: {
         topic: params.id,

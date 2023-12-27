@@ -9,10 +9,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import SignPopup from "@/components/ui/SignPopup";
+import { SigninPopup } from "@/components/ui/Popup";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmailForm } from "@/components/ui/Email";
 
 type authError =
   | "Configuration"
@@ -28,7 +29,7 @@ const ErrorCard = ({ error }: { error?: authError }) => {
         重新登陆
       </Button>
     );
-    return <SignPopup className="w-[20rem]">{B}</SignPopup>;
+    return <SigninPopup className="w-[20rem]">{B}</SigninPopup>;
   };
   return (
     <Card className="absolute w-[80%] h-[30%] top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">

@@ -26,16 +26,15 @@ import { useSession } from "next-auth/react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { EmailForm } from "@/components/ui/Email";
+import { ChatForm } from "@/components/ui/ChatForm";
 import DropdownMenuWithDialog, {
   DialogItem,
 } from "@/components/ui/DropdownDialog";
-import SignPopup from "@/components/ui/SignPopup";
+import { SigninPopup, ChatPopup } from "@/components/ui/Popup";
 
 const mockUser: Session["user"] = {
   id: "1",
   email: "l@gmail.com",
-  createdAt: null,
-  password: null,
   avatar: "https://github.com/shadcn.png",
   emailVerified: null,
   name: "ll",
@@ -114,19 +113,24 @@ export default function Dashboard() {
   const navi: string | undefined =
     session?.user && status == "authenticated" ? undefined : "/auth/signin";
 
-  const Footer = ({ navi }: { navi: string | undefined }) => {
+  const Footer = () => {
     const B = (
       <Button className="bg-black text-white ml-auto mb-[1rem] mr-[1rem] mt-[1rem]">
         <ChevronRight className="h-4 w-4" /> 创建聊天室
       </Button>
     );
-    return <SignPopup className="w-[20rem]">{B}</SignPopup>;
+
+    return session?.user && status == "authenticated" ? (
+      <ChatPopup className="w-[20rem]">{B}</ChatPopup>
+    ) : (
+      <SigninPopup className="w-[20rem]">{B}</SigninPopup>
+    );
   };
   return (
     <div className="h-full flex flex-col justify-between">
       <Header user={session?.user} />
       <TopicCard className="h-[70%] mt-auto" />
-      <Footer navi={navi} />
+      <Footer />
     </div>
   );
 }
