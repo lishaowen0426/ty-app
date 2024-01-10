@@ -99,6 +99,8 @@ export function ChatForm() {
           tags: data.tags,
         } satisfies ChatCreateReq),
       });
+      if (resp.ok) {
+      }
     } catch (e) {}
   };
   const onSubmitInValid: SubmitErrorHandler<

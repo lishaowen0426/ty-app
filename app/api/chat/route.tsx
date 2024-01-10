@@ -17,8 +17,8 @@ const createChatFn = async (req: ChatCreateReq) => {
 };
 
 export async function POST(params: NextRequest) {
-  console.log(params);
   const req = (await params.json()) as ChatCreateReq;
+  console.log(req);
   try {
     createChatFn(req);
   } catch (e) {

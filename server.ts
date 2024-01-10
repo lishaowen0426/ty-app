@@ -22,9 +22,36 @@ const io = new Server(httpServer, {
 
 httpServer.listen(parseInt(process.env.CHAT_PORT!));
 
+/* DB-related*/
+const getTopic = async (id: string) => {
+  try {
+    const topic = await prisma.topic.findFirstOrThrow({
+      where: {
+        id: id,
+      },
+    });
+    return topic;
+  } catch (e) {
+    throw e;
+  }
+};
+/**/
 io.on("connection", (socket) => {
-  const topic = socket.handshake.headers.topic;
+  const topicID = socket.handshake.headers.topic;
   const user = socket.handshake.auth.user as Session["user"];
-  console.log(topic);
+  //console.log(topicID);
   console.log(user);
+  if (!topicID) {
+    socket.emit("notfound");
+  } else {
+    getTopic(topicID as string)
+      .then((topic) => {
+        socket.emit("OK");
+      })
+      .catch((e) => {
+        console.log(topicID);
+        //socket.emit("OK");
+        socket.emit("notfound");
+      });
+  }
 });

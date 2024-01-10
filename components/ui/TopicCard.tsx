@@ -55,6 +55,7 @@ const mockTopic: TopicProps = {
 const Topic = (props: TopicProps, router: ReturnType<typeof useRouter>) => {
   return (
     <Card
+      key={Math.floor(Math.random())}
       className="flex h-20 justify-between"
       onClick={(event) => {
         event.stopPropagation();
