@@ -27,6 +27,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { EmailForm } from "@/components/ui/Email";
 import { ChatForm } from "@/components/ui/ChatForm";
+import Profile from "@/components/ui/ProfileCard";
 import DropdownMenuWithDialog, {
   DialogItem,
 } from "@/components/ui/DropdownDialog";
@@ -75,13 +76,8 @@ const UserInfo = ({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DialogItem triggerChildren="账户">
-              <DialogTitle>编辑个人账户</DialogTitle>
-              <DialogDescription>Edit this record below.</DialogDescription>
-            </DialogItem>
             <DialogItem triggerChildren="设置">
-              <DialogTitle>设置</DialogTitle>
-              <DialogDescription>Edit this record below.</DialogDescription>
+              <Profile className="w-[90%]" user={user} />
             </DialogItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
@@ -98,10 +94,16 @@ const UserInfo = ({
   );
 };
 
-const Header = ({ user }: { user?: Session["user"] }) => {
+export const Header = ({
+  user,
+  title,
+}: {
+  user?: Session["user"];
+  title: string;
+}) => {
   return (
     <div className="flex justify-between m-[2rem]">
-      <h2 className="text-4xl font-bold tracking-tight">聊天室</h2>
+      <h2 className="text-4xl font-bold tracking-tight">{title}</h2>
       <UserInfo user={user} />
     </div>
   );
@@ -128,7 +130,7 @@ export default function Dashboard() {
   };
   return (
     <div className="h-full flex flex-col justify-between">
-      <Header user={session?.user} />
+      <Header user={session?.user} title="聊天室" />
       <TopicCard className="h-[70%] mt-auto" />
       <Footer />
     </div>

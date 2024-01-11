@@ -58,17 +58,7 @@ export const DialogItem = React.forwardRef<
           {triggerChildren}
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogContent>
-          {children}
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              关闭
-            </Button>
-          </DialogClose>
-        </DialogContent>
-      </DialogPortal>
+      <DialogPortal>{children}</DialogPortal>
     </Dialog>
   );
 });

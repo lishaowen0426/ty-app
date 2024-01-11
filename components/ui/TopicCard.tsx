@@ -52,7 +52,10 @@ const mockTopic: TopicProps = {
   participants: 1762,
 };
 
-const Topic = (props: TopicProps, router: ReturnType<typeof useRouter>) => {
+export const Topic = (
+  props: TopicProps,
+  router: ReturnType<typeof useRouter>
+) => {
   return (
     <Card
       key={Math.floor(Math.random())}
