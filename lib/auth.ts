@@ -9,6 +9,8 @@ import { use } from "react";
 import { createTransport } from "nodemailer";
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
+import SHA256 from "crypto-js/sha256";
+import Hex from "crypto-js/enc-hex";
 
 export const handlers = async function auth(
   req: NextApiRequest,
@@ -176,8 +178,7 @@ const login: LoginFn = async (email: string, password: string) => {
   if (!user.password) {
     throw new Error("set");
   }
-
-  if (password == user.password) {
+  if (SHA256(password).toString(Hex) == user.password) {
     user.password = "set";
     return user;
   } else throw new Error("wrong");

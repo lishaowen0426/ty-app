@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { use } from "react";
 
 export interface TopicProps {
   id: string;
@@ -99,41 +100,20 @@ const TopicList = () => {
 
   const [progress, setProgress] = useState(0);
 
-  const fetchTopics = () => {
+  const fetchTopics = async () => {
     //fetch from api, a fake call with 500ms delay
-    setTimeout(() => {
-      setTopicList((l) => {
-        //fetch topics from api
-        const updated: TopicList = {
-          items: l.items.concat(Array(50).fill(Topic(mockTopic, router))),
-          hasMore: true,
-        };
-        return updated;
+    try {
+      let resp = await fetch("/api/chat", {
+        method: "GET",
       });
-    }, 1000);
 
-    setTimeout(() => {
-      setProgress(30);
-    }, 300);
-    setTimeout(() => {
-      setProgress(60);
-    }, 600);
-    setTimeout(() => {
-      setProgress(100);
-    }, 900);
+      let topics = await resp.json();
+      return topics.topic;
+    } catch (e) {}
   };
 
-  useEffect(() => {
-    setTimeout(() => {
-      setTopicList((t) => {
-        const updated: TopicList = {
-          items: Array(50).fill(Topic(mockTopic, router)),
-          hasMore: true,
-        };
-        return updated;
-      });
-    }, 500);
-  }, []);
+  let topics = use(fetchTopics());
+  console.log(topics);
 
   return (
     <div id="scrollDiv" className="w-full h-[85%] overflow-y-auto">

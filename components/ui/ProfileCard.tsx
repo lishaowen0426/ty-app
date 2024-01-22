@@ -25,6 +25,7 @@ import { EmailForm } from "@/components/ui/Email";
 import { Label } from "@/components/ui/label";
 import { useRef } from "react";
 import { useState } from "react";
+import { ProfileInfo } from "@/app/api/register/route";
 import {
   Form,
   FormControl,
@@ -34,6 +35,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { register } from "module";
+
+const AVATAR_SIZE_LIMIT = 5120;
+const AVATAR_ALLOWED_TYPE = ["image/png", "image/jpeg"];
 
 export default function Profile({
   className,
@@ -74,14 +78,43 @@ export default function Profile({
     onChange: (e) => {
       handleAvatarUpload(e);
     },
+    validate: (v) => {
+      if (v[0]) {
+        if (v[0].size > AVATAR_SIZE_LIMIT) {
+          return "头像过大";
+        }
+
+        if (!AVATAR_ALLOWED_TYPE.includes(v[0].type)) {
+          return "格式不符";
+        }
+      }
+      return true;
+    },
   });
 
   const PF = ({ userinfo }: { userinfo: NonNullable<typeof user> }) => {
     const onSubmitValid: SubmitHandler<formInput> = async (data, e) => {
       e?.preventDefault();
       e?.stopPropagation();
-      console.log("valid");
-      console.log(data);
+
+      const formData = new FormData();
+      formData.set("email", userinfo.email);
+      if (data.avatar[0]) {
+        formData.set("avatar", data.avatar[0]);
+      }
+
+      if (data.name) {
+        formData.set("name", data.name);
+      }
+
+      if (data.password) {
+        formData.set("password", data.password);
+      }
+
+      const resp = await fetch("/api/register", {
+        method: "POST",
+        body: formData,
+      });
     };
     const onSubmitInValid: SubmitErrorHandler<formInput> = async (data, e) => {
       e?.preventDefault();
@@ -97,6 +130,13 @@ export default function Profile({
           <Input
             {...form.register("password", {
               validate: (v) => {
+                const rep = form.getValues("password_again");
+                if (v != rep) {
+                  return "密码不一致";
+                }
+                if (v == "") {
+                  return true;
+                }
                 const schema = z
                   .string()
                   .min(6, { message: "密码需大于6个字" })
@@ -111,10 +151,7 @@ export default function Profile({
           <Input
             className="mt-2"
             {...form.register("password_again", {
-              validate: (v) => {
-                const password = form.getValues("password");
-                return v == password || "密码不一致";
-              },
+              deps: "password",
             })}
             type="password"
             placeholder="确认密码"
@@ -133,6 +170,9 @@ export default function Profile({
           }}
           type="file"
           style={{ display: "none" }} // Make the file input element invisible
+          accept={AVATAR_ALLOWED_TYPE.reduce((accum, current) => {
+            return accum + "," + current;
+          })}
         />
 
         <div className="my-2">

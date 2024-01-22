@@ -25,18 +25,19 @@ const getTopics = async (req?: TopicReq) => {
   }
 };
 
-export async function POST(params: NextRequest) {
-  const req = (await params.json()) as ChatCreateReq;
+export async function POST(req: NextRequest) {
+  const param = await req.json();
   console.log(req);
   try {
-    createChatFn(req);
+    createChatFn(param);
   } catch (e) {
     console.log(e);
   }
-  return new NextResponse(null, { status: 200 });
+  return NextResponse.json({ status: 200 });
 }
 
-export async function GET(req: NextRequest, res: NextResponse) {
+export async function GET(req: NextRequest) {
   const topics = await getTopics();
   console.log(topics);
+  return NextResponse.json({ status: 200, topic: topics });
 }

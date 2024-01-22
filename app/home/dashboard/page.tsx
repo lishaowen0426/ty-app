@@ -32,6 +32,7 @@ import DropdownMenuWithDialog, {
   DialogItem,
 } from "@/components/ui/DropdownDialog";
 import { SigninPopup, ChatPopup } from "@/components/ui/Popup";
+import { Suspense } from "react";
 
 const mockUser: Session["user"] = {
   id: "1",
@@ -131,7 +132,9 @@ export default function Dashboard() {
   return (
     <div className="h-full flex flex-col justify-between">
       <Header user={session?.user} title="聊天室" />
-      <TopicCard className="h-[70%] mt-auto" />
+      <Suspense fallback={<p>载入话题中</p>}>
+        <TopicCard className="h-[70%] mt-auto" />
+      </Suspense>
       <Footer />
     </div>
   );
