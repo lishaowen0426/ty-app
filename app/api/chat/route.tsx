@@ -7,6 +7,8 @@ export interface ChatCreateReq {
   tags?: string[];
 }
 
+export interface TopicReq {}
+
 const createChatFn = async (req: ChatCreateReq) => {
   await prisma.topic.create({
     data: {
@@ -14,6 +16,13 @@ const createChatFn = async (req: ChatCreateReq) => {
       topic: req.topic,
     },
   });
+};
+
+const getTopics = async (req?: TopicReq) => {
+  if (!req) {
+    let topics = await prisma.topic.findMany();
+    return topics;
+  }
 };
 
 export async function POST(params: NextRequest) {
@@ -25,4 +34,9 @@ export async function POST(params: NextRequest) {
     console.log(e);
   }
   return new NextResponse(null, { status: 200 });
+}
+
+export async function GET(req: NextRequest, res: NextResponse) {
+  const topics = await getTopics();
+  console.log(topics);
 }

@@ -1,6 +1,14 @@
 "use client";
-export default function ChatroomError() {
-  // You can add any UI inside Loading, including a Skeleton.
+import { useRouter } from "next/navigation";
+
+export default function ChatError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  const router = useRouter();
   console.log("error");
-  return <p>error....</p>;
+  router.push("/home/dashboard");
 }

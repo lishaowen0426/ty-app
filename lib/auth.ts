@@ -120,13 +120,13 @@ export const handlers = async function auth(
           return true;
         }
       },
-      async jwt({ token, user, account }) {
-        console.log(user);
+      async jwt({ token, user, account, profile }) {
         if (user) {
           token.email = user.email;
           token.name = user.name;
           token.id = user.id;
           token.avatar = user.avatar;
+          token.password = user.password ? true : false;
         }
 
         return token;
@@ -137,6 +137,7 @@ export const handlers = async function auth(
         session.user.emailVerified = token.emailVerified;
         session.user.avatar = token.avatar;
         session.user.name = token.name ?? "";
+        session.user.password = token.password;
 
         return session;
       },
@@ -176,10 +177,8 @@ const login: LoginFn = async (email: string, password: string) => {
     throw new Error("set");
   }
 
-  console.log(user.password == password);
-
   if (password == user.password) {
-    user.password = "";
+    user.password = "set";
     return user;
   } else throw new Error("wrong");
 };
