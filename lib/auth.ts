@@ -127,18 +127,17 @@ export const handlers = async function auth(
           token.email = user.email;
           token.name = user.name;
           token.id = user.id;
-          token.avatar = user.avatar;
+          //token.avatar = user.avatar;
           token.password = user.password ? true : false;
         }
 
         return token;
       },
       async session({ session, token }) {
-        console.log(token.avatar);
         session.user.email = token.email ?? "";
         session.user.id = token.id;
-        session.user.emailVerified = token.emailVerified;
-        session.user.avatar = token.avatar;
+        //session.user.emailVerified = token.emailVerified;
+        session.user.avatar = null;
         session.user.name = token.name ?? "";
         session.user.password = token.password;
 

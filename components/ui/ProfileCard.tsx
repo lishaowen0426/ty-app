@@ -18,6 +18,7 @@ import {
   SubmitErrorHandler,
   useForm,
   Controller,
+  FormProvider,
 } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { Session } from "next-auth";
@@ -26,6 +27,8 @@ import { Label } from "@/components/ui/label";
 import { useRef } from "react";
 import { useState } from "react";
 import { forwardRef } from "react";
+import { createContext } from "react";
+import { FormMessage } from "@/components/ui/FormMessage";
 
 const AVATAR_SIZE_LIMIT = 5120;
 const AVATAR_ALLOWED_TYPE = ["image/png", "image/jpeg"];
@@ -40,6 +43,7 @@ const Profile = forwardRef(function Profile(
   },
   ref: any
 ) {
+  const s = useSession();
   const [avatar, setAvatar] = useState<Blob | null>(
     user?.avatar ? new Blob([user.avatar]) : null
   );
@@ -155,50 +159,55 @@ const Profile = forwardRef(function Profile(
     };
 
     return (
-      <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
-        <Input
-          {...rest}
-          ref={(e) => {
-            avatarRef(e);
-            hiddenFileInput.current = e;
-          }}
-          type="file"
-          style={{ display: "none" }} // Make the file input element invisible
-          accept={AVATAR_ALLOWED_TYPE.reduce((accum, current) => {
-            return accum + "," + current;
-          })}
-        />
+      <FormProvider {...form}>
+        <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
+          <Input
+            {...rest}
+            ref={(e) => {
+              avatarRef(e);
+              hiddenFileInput.current = e;
+            }}
+            type="file"
+            style={{ display: "none" }} // Make the file input element invisible
+            accept={AVATAR_ALLOWED_TYPE.reduce((accum, current) => {
+              return accum + "," + current;
+            })}
+          />
 
-        <div className="my-2">
-          <Label>邮箱</Label>
-          <Input
-            {...form.register("email", {
-              disabled: true,
-            })}
-            type="email"
-            placeholder={userinfo.email}
+          <div className="my-2">
+            <Label>邮箱</Label>
+            <Input
+              {...form.register("email", {
+                disabled: true,
+              })}
+              type="email"
+              placeholder={userinfo.email}
+            />
+          </div>
+          <div className="my-2">
+            <Label>昵称</Label>
+            <Input
+              {...form.register("name", {
+                validate: (v) => {
+                  const schema = z.string().max(6);
+                  return schema.safeParse(v).success || "昵称需小于6个字";
+                },
+              })}
+              type="text"
+              placeholder={userinfo.name || "设置昵称让更多人记住你！"}
+            />
+            <FormMessage field="name" />
+          </div>
+          <PasswordField
+            placeholder={
+              userinfo.password ? "新密码" : "设置密码以启用密码登陆"
+            }
           />
-        </div>
-        <div className="my-2">
-          <Label>昵称</Label>
-          <Input
-            {...form.register("name", {
-              validate: (v) => {
-                const schema = z.string().max(6);
-                return schema.safeParse(v).success || "昵称需小于6个字";
-              },
-            })}
-            type="text"
-            placeholder={userinfo.name || "设置昵称让更多人记住你！"}
-          />
-        </div>
-        <PasswordField
-          placeholder={userinfo.password ? "新密码" : "设置密码以启用密码登陆"}
-        />
-        <div className="my-5 flex justify-end">
-          <Button type="submit">提交</Button>
-        </div>
-      </form>
+          <div className="my-5 flex justify-end">
+            <Button type="submit">提交</Button>
+          </div>
+        </form>
+      </FormProvider>
     );
   };
 

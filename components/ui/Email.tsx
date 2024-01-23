@@ -89,7 +89,6 @@ export function EmailForm() {
     e?.preventDefault();
     e?.stopPropagation();
     //console.log(e?.nativeEvent.submitter.id);
-
     if ((e?.nativeEvent as SubmitEvent).submitter!.id == "signup") {
       try {
         let resp = await signIn(

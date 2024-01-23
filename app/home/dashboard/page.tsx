@@ -10,6 +10,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
+import { useAvatar } from "@/components/ui/AvatarProvider";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, ButtonProps, buttonVariants } from "@/components/ui/button";
@@ -34,14 +35,13 @@ const UserInfo = ({
   user?: Session["user"];
   className?: string;
 }) => {
-  console.log(user);
+  const avatarUrl = useAvatar(user);
+
   const trigger = (
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="relative h-8 w-8 rounded-full">
         <Avatar className="h-12 w-12">
-          {user?.avatar && (
-            <AvatarImage src={URL.createObjectURL(new Blob([user.avatar]))} />
-          )}
+          <AvatarImage src={avatarUrl} />
           <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
             Y
           </AvatarFallback>
@@ -99,6 +99,7 @@ export const Header = ({
 };
 
 export default function Dashboard() {
+  console.log("enter dashboard");
   const { data: session, status } = useSession();
 
   const navi: string | undefined =
