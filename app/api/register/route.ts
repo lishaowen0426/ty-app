@@ -28,7 +28,8 @@ const setProfile = async (profile: FormData) => {
     info.password = SHA256(profile.get("password")! as string).toString(Hex);
   }
   if (profile.get("avatar")) {
-    info.avatar = profile.get("avatar")?.slice();
+    let f = profile.get("avatar") as File;
+    info.avatar = Buffer.from(await f.arrayBuffer());
   }
 
   const updatedUser = await prisma.user.update({
@@ -40,9 +41,6 @@ const setProfile = async (profile: FormData) => {
 };
 export async function POST(request: NextRequest) {
   let profile = await request.formData();
-  console.log(profile.get("avatar"));
-  let blob = profile.get("avatar")?.slice();
-  console.log(blob);
 
   setProfile(profile);
 

@@ -134,6 +134,7 @@ export const handlers = async function auth(
         return token;
       },
       async session({ session, token }) {
+        console.log(token.avatar);
         session.user.email = token.email ?? "";
         session.user.id = token.id;
         session.user.emailVerified = token.emailVerified;

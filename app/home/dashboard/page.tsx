@@ -10,14 +10,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, ButtonProps, buttonVariants } from "@/components/ui/button";
 import { Session } from "next-auth";
@@ -34,14 +27,6 @@ import DropdownMenuWithDialog, {
 import { SigninPopup, ChatPopup } from "@/components/ui/Popup";
 import { Suspense } from "react";
 
-const mockUser: Session["user"] = {
-  id: "1",
-  email: "l@gmail.com",
-  avatar: "https://github.com/shadcn.png",
-  emailVerified: null,
-  name: "ll",
-};
-
 const UserInfo = ({
   user,
   className,
@@ -49,11 +34,14 @@ const UserInfo = ({
   user?: Session["user"];
   className?: string;
 }) => {
+  console.log(user);
   const trigger = (
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="relative h-8 w-8 rounded-full">
         <Avatar className="h-12 w-12">
-          {user?.avatar && <AvatarImage src={user.avatar} />}
+          {user?.avatar && (
+            <AvatarImage src={URL.createObjectURL(new Blob([user.avatar]))} />
+          )}
           <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
             Y
           </AvatarFallback>

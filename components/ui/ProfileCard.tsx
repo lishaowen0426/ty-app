@@ -25,27 +25,21 @@ import { EmailForm } from "@/components/ui/Email";
 import { Label } from "@/components/ui/label";
 import { useRef } from "react";
 import { useState } from "react";
-import { ProfileInfo } from "@/app/api/register/route";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { register } from "module";
+import { forwardRef } from "react";
 
 const AVATAR_SIZE_LIMIT = 5120;
 const AVATAR_ALLOWED_TYPE = ["image/png", "image/jpeg"];
 
-export default function Profile({
-  className,
-  user,
-}: {
-  className?: string;
-  user: Session["user"] | undefined;
-}) {
+const Profile = forwardRef(function Profile(
+  {
+    className,
+    user,
+  }: {
+    className?: string;
+    user: Session["user"] | undefined;
+  },
+  ref: any
+) {
   const [avatar, setAvatar] = useState<Blob | null>(
     user?.avatar ? new Blob([user.avatar]) : null
   );
@@ -260,4 +254,6 @@ export default function Profile({
       </DialogContent>
     );
   }
-}
+});
+
+export default Profile;

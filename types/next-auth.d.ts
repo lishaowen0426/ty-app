@@ -2,13 +2,13 @@ import { DefaultSession, User as AuthUser } from "next-auth";
 import { User as PrismaUser } from "@prisma/client";
 
 type P = PrismaUser;
+type PW = "password";
 type PP = {
   [Property in keyof P as Exclude<Property, "createdAt">]: Property extends PW
     ? boolean
     : P[Property];
 };
 
-type PW = "password";
 declare module "next-auth" {
   export interface User extends P {}
   export interface Session {
