@@ -186,6 +186,7 @@ const Profile = forwardRef(function Profile(
             <Input
               {...form.register("name", {
                 validate: (v) => {
+                  console.log(v);
                   const schema = z.string().max(6);
                   return schema.safeParse(v).success || "昵称需小于6个字";
                 },

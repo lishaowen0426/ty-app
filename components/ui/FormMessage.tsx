@@ -1,15 +1,14 @@
 import * as React from "react";
 import { useForm, useFormContext } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement> & { field: string }
 >(({ className, children, field, ...props }, ref) => {
+  console.log("enter");
   const form = useFormContext();
   const { isDirty, isTouched, invalid, error } = form!.getFieldState(field)!;
-  console.log(error);
-  /*
-  const { error, formMessageId } = useFormField();
 
   const body = error ? String(error?.message) : children;
 
@@ -20,7 +19,7 @@ const FormMessage = React.forwardRef<
   return (
     <p
       ref={ref}
-      id={formMessageId}
+      id={field}
       className={cn(
         "text-sm font-medium text-red-500 dark:text-red-900",
         className
@@ -30,9 +29,6 @@ const FormMessage = React.forwardRef<
       {body}
     </p>
   );
-  */
-
-  return <p>form message</p>;
 });
 
 export { FormMessage };
