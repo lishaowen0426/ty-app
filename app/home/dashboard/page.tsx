@@ -10,7 +10,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { useAvatar } from "@/components/ui/AvatarProvider";
+import { UserAvatar } from "@/components/ui/AvatarProvider";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, ButtonProps, buttonVariants } from "@/components/ui/button";
@@ -27,61 +27,65 @@ import DropdownMenuWithDialog, {
 } from "@/components/ui/DropdownDialog";
 import { SigninPopup, ChatPopup } from "@/components/ui/Popup";
 import { Suspense } from "react";
+import { useRef, forwardRef, useState } from "react";
 
-const UserInfo = ({
-  user,
-  className,
-}: {
+interface UserInfoProps {
   user?: Session["user"];
   className?: string;
-}) => {
-  const avatarUrl = useAvatar(user);
+}
 
-  const trigger = (
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={avatarUrl} />
-          <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
-            Y
-          </AvatarFallback>
-        </Avatar>
-      </Button>
-    </DropdownMenuTrigger>
-  );
-  return (
-    <div>
-      <DropdownMenuWithDialog trigger={trigger}>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">欢迎</p>
-              {user && (
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user.email}
-                </p>
-              )}
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DialogItem triggerChildren="设置">
-              <Profile className="w-[90%]" user={user} />
-            </DialogItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => {
-              signOut();
-            }}
-          >
-            登出
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenuWithDialog>
-    </div>
-  );
-};
+const UserInfo = forwardRef<HTMLImageElement, UserInfoProps>(
+  ({ user, className }, ref) => {
+    const trigger = (
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-12 w-12">
+            <UserAvatar user={user}>
+              <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
+                Y
+              </AvatarFallback>
+            </UserAvatar>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+    );
+    return (
+      <div>
+        <DropdownMenuWithDialog trigger={trigger}>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">欢迎</p>
+                {user && (
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                )}
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DialogItem
+                triggerChildren="设置"
+                onOpenChange={(open: boolean) => {}}
+              >
+                <Profile className="w-[90%]" user={user} />
+              </DialogItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                signOut();
+              }}
+            >
+              登出
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuWithDialog>
+      </div>
+    );
+  }
+);
 
 export const Header = ({
   user,
@@ -99,7 +103,7 @@ export const Header = ({
 };
 
 export default function Dashboard() {
-  console.log("enter dashboard");
+  console.log("enter Dashboard");
   const { data: session, status } = useSession();
 
   const navi: string | undefined =

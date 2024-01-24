@@ -27,8 +27,10 @@ import { Label } from "@/components/ui/label";
 import { useRef } from "react";
 import { useState } from "react";
 import { forwardRef } from "react";
-import { createContext } from "react";
+import { useContext } from "react";
 import { FormMessage } from "@/components/ui/FormMessage";
+import { UserAvatar } from "@/components/ui/AvatarProvider";
+import { AvatarContext } from "@/components/ui/AvatarProvider";
 
 const AVATAR_SIZE_LIMIT = 5120;
 const AVATAR_ALLOWED_TYPE = ["image/png", "image/jpeg"];
@@ -43,19 +45,13 @@ const Profile = forwardRef(function Profile(
   },
   ref: any
 ) {
-  const s = useSession();
-  const [avatar, setAvatar] = useState<Blob | null>(
-    user?.avatar ? new Blob([user.avatar]) : null
-  );
+  const { setAvatar } = useContext(AvatarContext);
   const [avatarURL, setAvatarURL] = useState<string | undefined>(undefined);
 
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("handle");
-    console.log(e.target.files);
     if (e.target.files && e.target.files.length == 1) {
       const f: File = e.target.files[0];
-      setAvatar(f);
       setAvatarURL(URL.createObjectURL(f));
     }
   };
@@ -99,6 +95,7 @@ const Profile = forwardRef(function Profile(
       formData.set("email", userinfo.email);
       if (data.avatar[0]) {
         formData.set("avatar", data.avatar[0]);
+        setAvatar(URL.createObjectURL(data.avatar[0]));
       }
 
       if (data.name) {
@@ -226,10 +223,11 @@ const Profile = forwardRef(function Profile(
               hiddenFileInput.current?.click();
             }}
           >
-            <AvatarImage src={avatarURL} />
-            <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
-              {user.email.charAt(0)}
-            </AvatarFallback>
+            <UserAvatar user={user} url={avatarURL}>
+              <AvatarFallback className="w-full h-full flex items-center bg-slate-400 font-semibold text-[1.5rem]">
+                Y
+              </AvatarFallback>
+            </UserAvatar>
           </Avatar>
           <div className="flex justify-center">
             <Button
@@ -239,7 +237,6 @@ const Profile = forwardRef(function Profile(
                 if (hiddenFileInput.current) {
                   hiddenFileInput.current.files = null;
                   form.resetField("avatar");
-                  setAvatar(null);
                   setAvatarURL(undefined);
                 }
               }}

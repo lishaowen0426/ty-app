@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const params = new URL(req.url).searchParams;
   const topics = await getTopics();
-  console.log(topics);
   return NextResponse.json({ status: 200, topic: topics });
 }

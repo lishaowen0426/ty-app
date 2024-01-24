@@ -67,7 +67,7 @@ model VerificationToken {
 }
 
 model Topic {
-  id        String    @id @default(cuid())
+  id        Int       @id @default(autoincrement())
   creator   User      @relation(fields: [creatorId], references: [id])
   creatorId String
   createdAt DateTime? @default(now())

@@ -60,7 +60,7 @@ export const Topic = (
   return (
     <Card
       key={Math.floor(Math.random())}
-      className="flex h-20 justify-between"
+      className="flex h-20 justify-between w-[360px]"
       onClick={(event) => {
         event.stopPropagation();
         event.preventDefault();
@@ -103,20 +103,24 @@ const TopicList = () => {
   const fetchTopics = async () => {
     //fetch from api, a fake call with 500ms delay
     try {
-      let resp = await fetch("/api/chat", {
+      let topic = await fetch("/api/chat", {
         method: "GET",
-      });
+      })
+        .then((r) => {
+          return r.json();
+        })
+        .then((t) => {
+          return t.topic;
+        });
 
-      let topics = await resp.json();
-      return topics.topic;
+      return topic;
     } catch (e) {}
   };
 
   let topics = use(fetchTopics());
-  console.log(topics);
 
   return (
-    <div id="scrollDiv" className="w-full h-[85%] overflow-y-auto">
+    <div id="scrollDiv" className="w-full h-[85%] ">
       <InfiniteScroll
         dataLength={topicList.items.length}
         next={fetchTopics}
@@ -148,7 +152,7 @@ export default function TopicCard({ className }: { className?: string }) {
   };
   return (
     <Card className={cn(" p-[0.5rem] pb-0 m-1", className)}>
-      <div className="w-full flex justify-between mb-1 mt-1 h-[10%] ">
+      <div className="w-full flex justify-between mb-1 mt-1 h-[10%]">
         <div className="flex space-x-2  ">
           <Input type="text" placeholder="话题" className="w-[6rem] h-[80%]" />
           <Button variant="outline" className=" h-[80%]">
