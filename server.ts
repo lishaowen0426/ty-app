@@ -27,7 +27,7 @@ const getTopic = async (id: string) => {
   try {
     const topic = await prisma.topic.findFirstOrThrow({
       where: {
-        id: id,
+        id: parseInt(id),
       },
     });
     return topic;

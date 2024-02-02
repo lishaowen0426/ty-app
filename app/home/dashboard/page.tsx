@@ -126,7 +126,7 @@ export default function Dashboard() {
     <div className="h-full flex flex-col justify-between">
       <Header user={session?.user} title="聊天室" />
       <Suspense fallback={<p>载入话题中</p>}>
-        <TopicCard className="h-[70%] mt-auto" />
+        <TopicCard className="h-[70%] " />
       </Suspense>
       <Footer />
     </div>
