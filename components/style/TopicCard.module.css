@@ -1,0 +1,12 @@
+.topic-container {
+  display: flex;
+  max-width: fit-content;
+}
+@media screen and (min-width: 800px) {
+  .topic-container {
+  }
+}
+@media screen and (min-width: 1200px) {
+  .topic-container {
+  }
+}

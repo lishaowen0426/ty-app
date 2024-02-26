@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import RootHead from "@/components/RootHead";
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html className="h-screen" lang="en">
+      <RootHead />
       <body className={cn("h-full m-0", inter.className)}>{children}</body>
     </html>
   );
