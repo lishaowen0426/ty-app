@@ -154,7 +154,6 @@ const fetchTopic = async (
 ): Promise<TopicResponse> => {
   const { last_id, limit } = ctx.pageParam;
 
-  /*
   const response = await fetch(`/api/chat?lastid=${last_id}&limit=${limit}`, {
     method: "GET",
   });
@@ -164,10 +163,11 @@ const fetchTopic = async (
   }
 
   return response.json();
-  */
+  /*
   await new Promise((r) => setTimeout(r, 500));
   const topics = new Array(limit).fill(mockTopic);
   return { last_id: last_id + limit, topics: topics };
+  */
 };
 
 const TopicScroll = ({
@@ -402,9 +402,7 @@ const TopicPage = ({
   return (
     <>
       <Card className="relative left-1/2 -translate-x-1/2 w-[1200px] h-[400px] mb-3 flex flex-wrap justify-evenly">
-        <Suspense fallback={<div>loading...</div>}>
-          <DisplayTopic current={currentPage} />
-        </Suspense>
+        <Suspense fallback={<div>loading...</div>}></Suspense>
       </Card>
       {totalPage > 0 && (
         <Pagination>
@@ -549,6 +547,19 @@ const TopicContainer = ({ className }: { className?: string }) => {
   );
 };
 
+async function getTopics() {
+  const resp = await fetch("/api/chat?count=topic", { method: "GET" });
+  if (!resp.ok) {
+    throw new Error("get topic count failed");
+  }
+
+  const tc = await resp.json();
+  return tc.topicCount;
+}
+
 export default function TopicCard({ className }: { className?: string }) {
+  const topicCount = use(getTopics());
+  console.log(topicCount);
+
   return <TopicContainer className={className} />;
 }
