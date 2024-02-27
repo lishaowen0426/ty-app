@@ -1,7 +1,7 @@
 docker_compose := "docker compose -f docker/db.yml --env-file .env"
 
 db-up:
-    #!/usr/bin/env zsh
+    #!/usr/bin/env sh
     {{docker_compose}} up --detach 
 
 db-down:

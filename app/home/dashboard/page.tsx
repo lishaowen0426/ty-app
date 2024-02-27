@@ -103,7 +103,6 @@ export const Header = ({
 };
 
 export default function Dashboard() {
-  console.log("enter Dashboard");
   const { data: session, status } = useSession();
 
   const navi: string | undefined =
@@ -123,10 +122,10 @@ export default function Dashboard() {
     );
   };
   return (
-    <div className="h-full flex flex-col justify-between">
+    <div className="h-full flex flex-col justify-start">
       <Header user={session?.user} title="聊天室" />
       <Suspense fallback={<p>载入话题中</p>}>
-        <TopicCard className="h-[70%] " />
+        <TopicCard className="" />
       </Suspense>
       <Footer />
     </div>

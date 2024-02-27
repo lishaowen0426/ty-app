@@ -1,8 +1,11 @@
 "use client";
-import { cn } from "@/lib/utils";
 import { SessionProvider } from "next-auth/react";
 import { AvatarContext } from "@/components/ui/AvatarProvider";
 import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MediaContextProvider } from "@/components/Media";
+
+const queryClient = new QueryClient();
 
 export default function HomeLayout({
   children,
@@ -12,8 +15,14 @@ export default function HomeLayout({
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
   const value = { avatar, setAvatar };
   return (
-    <SessionProvider>
-      <AvatarContext.Provider value={value}>{children}</AvatarContext.Provider>
-    </SessionProvider>
+    <MediaContextProvider>
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider>
+          <AvatarContext.Provider value={value}>
+            {children}
+          </AvatarContext.Provider>
+        </SessionProvider>
+      </QueryClientProvider>
+    </MediaContextProvider>
   );
 }
