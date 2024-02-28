@@ -25,16 +25,13 @@ import {
 } from "@/components/ui/pagination";
 
 import { z } from "zod";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import InfiniteScroll from "react-infinite-scroll-component";
+
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Fragment, Suspense, use } from "react";
-import classes from "@/components/style/TopicCard.module.css";
 import {
   useInfiniteQuery,
   QueryFunctionContext,
@@ -349,7 +346,7 @@ const TopicPage = ({
     <>
       <Card
         className={cn(
-          "relative left-1/2 -translate-x-1/2 w-[1210px] h-[400px] mb-3 flex flex-wrap justify-start",
+          "relative left-1/2 -translate-x-1/2 w-[1210px] h-[400px] mb-3 flex flex-wrap justify-center",
           status == "pending" || isPlaceholderData ? "opacity-30" : ""
         )}
       >
