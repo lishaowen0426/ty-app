@@ -21,14 +21,14 @@ const getTopics = async (cursor: TopicCursor) => {
   if (cursor.last_id == 0) {
     //initial request
     return prisma.topic.findMany({
-      take: cursor.limit,
+      take: cursor.limit + 1, //take one more so we can decide hasMore
       orderBy: {
         id: "asc",
       },
     });
   } else {
     return prisma.topic.findMany({
-      take: cursor.limit,
+      take: cursor.limit + 1, //take one more so we can decide hasMore
       skip: 1,
       cursor: {
         id: cursor.last_id,
@@ -58,23 +58,42 @@ export async function GET(req: NextRequest) {
     const last_id = parseInt(params.get("lastid")!);
     const limit = parseInt(params.get("limit")!);
 
-    const topics = await getTopics({ last_id: last_id, limit: limit });
+    let topics = await getTopics({ last_id: last_id, limit: limit });
+    const hasMore = topics.length > limit;
+
+    topics = topics.slice(0, limit); // getTopics tries to get one more, remove here
 
     if (topics.length == 0) {
       return NextResponse.json(
-        { last_id: last_id, topics: topics },
+        { last_id: last_id, topics: topics, hasMore: hasMore },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
-        { last_id: topics[topics.length - 1].id, topics: topics },
+        {
+          last_id: topics[topics.length - 1].id,
+          topics: topics,
+          hasMore: hasMore,
+        },
         { status: 200 }
       );
     }
   }
-  if (params.has("count")) {
-    const topicCount = await prisma.topic.count();
-    return NextResponse.json({ topicCount: topicCount }, { status: 200 });
+  if (params.has("page") && params.has("count")) {
+    const page = parseInt(params.get("page")!);
+    const count = parseInt(params.get("count")!);
+    if (isNaN(page) || isNaN(count) || page < 1) {
+      return NextResponse.json(null, { status: 400 });
+    }
+
+    const topics = await prisma.topic.findMany({
+      take: count, //take one more so we can decide hasMore
+      skip: (page - 1) * count,
+      orderBy: {
+        id: "asc",
+      },
+    });
+    return NextResponse.json({ topics: topics }, { status: 200 });
   } else {
     return NextResponse.json(null, { status: 400 });
   }

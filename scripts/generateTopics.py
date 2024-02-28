@@ -11,9 +11,9 @@ def generateTopic(len):
 
 
 def getID(cur):
-    
-    cur.execute('SELECT * FROM "Topic" LIMIT 1;')
-    return cur.fetchone()[1]
+    cur.execute('SELECT * FROM "User" LIMIT 1;')
+    user = cur.fetchone()
+    return user[0]
     
 
 if len(sys.argv)<2:

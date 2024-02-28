@@ -35,7 +35,13 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Fragment, Suspense, use } from "react";
 import classes from "@/components/style/TopicCard.module.css";
-import { useInfiniteQuery, QueryFunctionContext } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  QueryFunctionContext,
+  useQuery,
+  keepPreviousData,
+  queryOptions,
+} from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Topic as TopicProp } from "@prisma/client";
 import { Media } from "@/components/Media";
@@ -147,11 +153,13 @@ export interface TopicCursor {
 export interface TopicResponse {
   last_id: number;
   topics: TopicProp[];
+  hasMore: boolean;
 }
 
 const fetchTopic = async (
   ctx: QueryFunctionContext<string[], TopicCursor>
 ): Promise<TopicResponse> => {
+  console.log("try to fetch data");
   const { last_id, limit } = ctx.pageParam;
 
   const response = await fetch(`/api/chat?lastid=${last_id}&limit=${limit}`, {
@@ -163,11 +171,6 @@ const fetchTopic = async (
   }
 
   return response.json();
-  /*
-  await new Promise((r) => setTimeout(r, 500));
-  const topics = new Array(limit).fill(mockTopic);
-  return { last_id: last_id + limit, topics: topics };
-  */
 };
 
 const TopicScroll = ({
@@ -299,65 +302,19 @@ const TopicScroll = ({
 };
 
 const TopicPage = ({
-  query,
+  topicCount,
   className,
 }: {
-  query: ReturnType<
-    typeof useInfiniteQuery<
-      TopicResponse,
-      Error,
-      InfiniteData<TopicResponse, unknown>,
-      string[],
-      {
-        last_id: number;
-        limit: number;
-      }
-    >
-  >;
+  topicCount: number;
   className?: string;
 }) => {
+  const totalPage = Math.ceil(topicCount / TOPIC_PER_PAGE);
+
   const [currentPage, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(0);
   const [enterBefore, setEnterBefore] = useState(false);
   const [beforePage, setBeforePage] = useState("");
   const [enterAfter, setEnterAfter] = useState(false);
   const [afterPage, setAfterPage] = useState("");
-  const [shouldRender, setShouldRender] = useState(false);
-
-  useEffect(
-    () => {
-      const countTopic = async () => {
-        const resp = await fetch(`/api/chat?count=topic`, {
-          method: "GET",
-        });
-
-        if (!resp.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const tc = await resp.json();
-        //setTotalPage(() => Math.ceil(tc.topicCount / TOPIC_PER_PAGE));
-        setTotalPage(() => 10);
-        setShouldRender(true);
-      };
-      countTopic();
-    },
-    [
-      /*only run at the first time*/
-    ]
-  );
-
-  const {
-    status,
-    data,
-    error,
-    isFetching,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-  } = query;
-
-  const allTopics = data ? data.pages : [];
-  console.log(allTopics);
 
   const PageItem = ({ p, isActive }: { p: number; isActive?: boolean }) => {
     return (
@@ -366,45 +323,45 @@ const TopicPage = ({
       </PaginationItem>
     );
   };
-  const fetchTopic = async (current: number) => {
-    while (allTopics.length < current) {
-      if (!hasNextPage) {
-        console.log("no page");
-        return;
-      }
-      if (!isFetchingNextPage) {
-        console.log("here");
-        await fetchNextPage();
-      } else {
-        console.log("isFetching");
-      }
-    }
-  };
 
-  const DisplayTopic = ({ current }: { current: number }) => {
-    use(fetchTopic(current));
-    console.log("current");
-    console.log(current);
-    console.log(allTopics);
-    let tt = allTopics[current - 1].topics;
+  const fetchTopicPage = (page: number) =>
+    fetch(`/api/chat?page=${page}&&count=${TOPIC_PER_PAGE}`, {
+      method: "GET",
+    }).then((res) => res.json());
 
-    return (
-      <Fragment>
-        {tt.map((t) => {
-          return <div>1</div>;
-        })}
-      </Fragment>
-    );
+  const topicPageQueryOptions = (page: number) => {
+    return queryOptions({
+      queryKey: ["topics", page],
+      queryFn: () => fetchTopicPage(page),
+      placeholderData: keepPreviousData,
+      staleTime: 2 * 60 * 1000, //2 min
+      gcTime: 5 * 60 * 1000,
+    });
   };
-  if (!shouldRender) {
-    return <></>;
-  }
+  const { status, error, data, isPlaceholderData, isSuccess } = useQuery(
+    topicPageQueryOptions(currentPage)
+  );
+
+  console.log(data);
+  const topics: TopicProp[] = [];
+
   return (
     <>
-      <Card className="relative left-1/2 -translate-x-1/2 w-[1200px] h-[400px] mb-3 flex flex-wrap justify-evenly">
-        <Suspense fallback={<div>loading...</div>}></Suspense>
+      <Card
+        className={cn(
+          "relative left-1/2 -translate-x-1/2 w-[1210px] h-[400px] mb-3 flex flex-wrap justify-start",
+          status == "pending" || isPlaceholderData ? "opacity-30" : ""
+        )}
+      >
+        {isSuccess ? (
+          data.topics.map((t: TopicProp) => {
+            return <div className="w-[400px] h-[100px] grow-0">{t.topic}</div>;
+          })
+        ) : (
+          <div>loading..</div>
+        )}
       </Card>
-      {totalPage > 0 && (
+      {
         <Pagination>
           <PaginationContent>
             {currentPage > 1 && (
@@ -505,10 +462,6 @@ const TopicPage = ({
                     text="下一页"
                     onClick={() => {
                       setPage((currentPage) => currentPage + 1);
-                      if (allTopics.length < currentPage + 1) {
-                        fetchNextPage();
-                      }
-
                       return false;
                     }}
                   />
@@ -517,18 +470,24 @@ const TopicPage = ({
             )}
           </PaginationContent>
         </Pagination>
-      )}
+      }
     </>
   );
 };
 
-const TopicContainer = ({ className }: { className?: string }) => {
+const TopicContainer = ({
+  className,
+  topicCount,
+}: {
+  className?: string;
+  topicCount: number;
+}) => {
   const query = useInfiniteQuery({
     queryKey: ["topics"],
     queryFn: fetchTopic,
     initialPageParam: { last_id: 0, limit: TOPIC_PER_PAGE },
     getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
-      if (lastPage.last_id == lastPageParam.last_id) {
+      if (!lastPage.hasMore) {
         return null;
       } else {
         return { last_id: lastPage.last_id, limit: lastPageParam.limit };
@@ -541,25 +500,18 @@ const TopicContainer = ({ className }: { className?: string }) => {
         <TopicScroll query={query} />
       </Media>
       <Media greaterThanOrEqual="lg" className="h-full">
-        <TopicPage query={query} />
+        <TopicPage topicCount={topicCount} />
       </Media>
     </div>
   );
 };
 
-async function getTopics() {
-  const resp = await fetch("/api/chat?count=topic", { method: "GET" });
-  if (!resp.ok) {
-    throw new Error("get topic count failed");
-  }
-
-  const tc = await resp.json();
-  return tc.topicCount;
-}
-
-export default function TopicCard({ className }: { className?: string }) {
-  const topicCount = use(getTopics());
-  console.log(topicCount);
-
-  return <TopicContainer className={className} />;
+export default function TopicCard({
+  className,
+  topicCount,
+}: {
+  className?: string;
+  topicCount: number;
+}) {
+  return <TopicContainer className={className} topicCount={topicCount} />;
 }
