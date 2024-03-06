@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { TopicCursor, TopicResponse } from "@/components/ui/TopicCard";
+import type { Topic as TopicProp } from "@prisma/client";
+import { UserAvatarInfo } from "@/components/ui/TopicCard";
 
 export interface ChatCreateReq {
   creatorId: string;
@@ -38,6 +40,25 @@ const getTopics = async (cursor: TopicCursor) => {
       },
     });
   }
+};
+
+const getAvatar = async (topics: TopicProp[]) => {
+  let ids = new Set<string>();
+  topics.forEach((t) => ids.add(t.creatorId));
+  let avatars: UserAvatarInfo[] = [];
+
+  for (const i of ids) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: i,
+      },
+    });
+    if (user && user.avatar) {
+      avatars.push({ id: i, avatar: user.avatar.toString("base64") });
+    }
+  }
+
+  return avatars;
 };
 
 export async function POST(req: NextRequest) {
@@ -93,7 +114,11 @@ export async function GET(req: NextRequest) {
         id: "asc",
       },
     });
-    return NextResponse.json({ topics: topics }, { status: 200 });
+    const avatarInfo = await getAvatar(topics);
+    return NextResponse.json(
+      { topics: topics, avatar: avatarInfo },
+      { status: 200 }
+    );
   } else {
     return NextResponse.json(null, { status: 400 });
   }

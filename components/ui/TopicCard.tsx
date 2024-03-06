@@ -31,6 +31,7 @@ import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import classes from "@/components/style/TopicCard.module.css";
 import { Fragment, Suspense, use } from "react";
 import {
   useInfiniteQuery,
@@ -49,29 +50,10 @@ import { cn } from "@/lib/utils";
 
 const TOPIC_PER_PAGE = 12;
 
-export interface TopicProps {
+export interface UserAvatarInfo {
   id: string;
-  topic: string;
-  description?: string;
-  distance: number;
-  created: Date;
-  participants: number;
+  avatar: string | null;
 }
-
-interface TopicList {
-  items: React.ReactNode[];
-  hasMore: boolean;
-}
-
-const mockTopic: TopicProps = {
-  id: "7263",
-  topic: "一起吃饭吧",
-  distance: 256,
-  description:
-    "仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐仅限西餐",
-  created: new Date(2023, 12, 11, 19, 40, 35),
-  participants: 1762,
-};
 
 /*
 export const Topic = (
@@ -156,7 +138,6 @@ export interface TopicResponse {
 const fetchTopic = async (
   ctx: QueryFunctionContext<string[], TopicCursor>
 ): Promise<TopicResponse> => {
-  console.log("try to fetch data");
   const { last_id, limit } = ctx.pageParam;
 
   const response = await fetch(`/api/chat?lastid=${last_id}&limit=${limit}`, {
@@ -339,24 +320,47 @@ const TopicPage = ({
     topicPageQueryOptions(currentPage)
   );
 
-  console.log(data);
   const topics: TopicProp[] = [];
+
+  const displayTopic = (data: {
+    topics: TopicProp[];
+    avatar: UserAvatarInfo[];
+  }) => {
+    return data.topics.map((t: TopicProp, i: number) => {
+      const ava = data.avatar.find((info) => info.id == t.creatorId);
+      return (
+        <div className={`relative mx-1 my-1 ${classes.topic}`}>
+          <div className={`w-[400px] h-[100px] grow-0  flex gap-2`} key={i}>
+            {ava?.avatar && (
+              <img
+                src={`data:image/png;base64, ${ava.avatar}`}
+                className="h-[60px] max-w-[60px]  self-center"
+              />
+            )}
+            <div className="">
+              <h3 className="my-2">{t.topic}</h3>
+              <span className="text-gray-400 w-[300px] text-ellipsis inline-block overflow-hidden">
+                hahahahahahahahahahahahahahahahahahahahahahahahhahaha
+              </span>
+            </div>
+          </div>
+          <div
+            className={`w-[400px] h-[100px] grow-0 ${classes.overlay}`}
+          ></div>
+        </div>
+      );
+    });
+  };
 
   return (
     <>
       <Card
         className={cn(
-          "relative left-1/2 -translate-x-1/2 w-[1210px] h-[400px] mb-3 flex flex-wrap justify-center",
+          "relative left-1/2 -translate-x-1/2 w-[1300px] h-[450px] mb-3 flex flex-wrap justify-center",
           status == "pending" || isPlaceholderData ? "opacity-30" : ""
         )}
       >
-        {isSuccess ? (
-          data.topics.map((t: TopicProp) => {
-            return <div className="w-[400px] h-[100px] grow-0">{t.topic}</div>;
-          })
-        ) : (
-          <div>loading..</div>
-        )}
+        {isSuccess ? displayTopic(data) : <div>loading..</div>}
       </Card>
       {
         <Pagination>

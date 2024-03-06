@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   } else {
     const id = params.get("user")!;
     const avatar = await getAvatar(id);
+    console.log(avatar);
     if (!avatar) {
       return new NextResponse(null, { status: 400 });
     } else {
