@@ -49,51 +49,55 @@ import styled from "styled-components";
 import { cn } from "@/lib/utils";
 
 const TOPIC_PER_PAGE = 12;
+const DOUBLE_WIDTH = "w-[800px]";
+const TRIPLE_WIDTH = "w-[1200px]";
+const TOPIC_PAGE_HEIGHT = "500"; // in pixel
 
 export interface UserAvatarInfo {
   id: string;
   avatar: string | null;
 }
 
-/*
-export const Topic = (
-  props: TopicProp,
-  router: ReturnType<typeof useRouter>
-) => {
-  return (
-    <Card
-      key={Math.floor(Math.random())}
-      className="flex h-20 justify-between w-[360px]"
-      onClick={(event) => {
-        event.stopPropagation();
-        event.preventDefault();
+export interface TopicWithAvatar extends TopicProp {
+  avatar: string | null;
+}
 
-        router.push("/home/room/" + props.id);
-      }}
-    >
-      <Avatar className="h-10 translate-y-5 flex-none ml-[0.25rem]">
-        <AvatarImage src="https://github.com/shadcn.png" />
-      </Avatar>
-      <div className="ml-4 mt-[1.2rem] space-y-2 flex-grow max-w-[10rem]">
-        <p className="text-lg font-bold leading-none">{props.topic}</p>
-        {props.description && (
-          <p className="text-sm text-black/40 overflow-x-auto  whitespace-nowrap">
-            {props.description}
-          </p>
+export const ContentCard = ({
+  content,
+  className,
+}: {
+  content: TopicWithAvatar | string;
+  className?: string;
+}) => {
+  if (typeof content == "string") {
+    return (
+      <div className={className} key={"0"}>
+        {content}
+      </div>
+    );
+  } else {
+    return (
+      <div
+        className={`relative flex ${classes.topic} ${className}`}
+        key={content.id}
+      >
+        {content.avatar && (
+          <img
+            src={`data:image/png;base64, ${content.avatar}`}
+            className="h-[60px] max-w-[60px]  self-center"
+          />
         )}
+        <div className="grow-1 min-w-0 block">
+          <h3 className="my-2">{content.topic}</h3>
+          <span className="w-full text-gray-400  text-ellipsis inline-block overflow-hidden">
+            hahahahahahahahahahahahahahahahahahahahahahahahhahaha
+          </span>
+        </div>
+        <div className={`w-full h-full grow-0 ${classes.overlay}`}></div>
       </div>
-      <div className="flex-none mt-[1.2rem] mr-2 text-xs text-black/40">
-        <p className="">距离：{props.distance}米</p>
-        <p className="">在线人数:{props.participants}</p>
-        <p className="">
-          创建于:
-          {formatDistanceToNow(props.created, {})}
-        </p>
-      </div>
-    </Card>
-  );
+    );
+  }
 };
-*/
 
 const TopicHeader = () => {
   const SelectDistance = ({ className }: { className?: string }) => {
@@ -131,7 +135,7 @@ export interface TopicCursor {
 
 export interface TopicResponse {
   last_id: number;
-  topics: TopicProp[];
+  topics: TopicWithAvatar[];
   hasMore: boolean;
 }
 
@@ -219,10 +223,10 @@ const TopicScroll = ({
     text,
   }: {
     item: VirtualItem;
-    topic?: TopicProp;
+    topic?: TopicWithAvatar;
     text?: string;
   }) => {
-    const VirtualItem = styled.div`
+    const VirtualItem = styled(ContentCard)`
       position: absolute;
       top: 0;
       left: 0;
@@ -233,24 +237,20 @@ const TopicScroll = ({
     `;
 
     if (text) {
-      const TextItem = styled(VirtualItem)``;
-      return <TextItem>{text}</TextItem>;
+      return <VirtualItem content={text} />;
     }
 
     if (topic) {
-      const TopicItem = styled(VirtualItem)`
-        &:hover {
-          background-color: rgb(243 244 246);
-        }
-        display: flex;
-      `;
-      return <TopicItem>{topic.topic}</TopicItem>;
+      return <VirtualItem content={topic} />;
     }
   };
 
   return (
     <Card
-      className="relative left-1/2 -translate-x-1/2 w-[300px] h-[700px] overflow-auto"
+      className={cn(
+        "relative left-1/2 -translate-x-1/2 w-[350px] h-[700px] overflow-auto",
+        className
+      )}
       ref={parent}
     >
       <div
@@ -269,9 +269,15 @@ const TopicScroll = ({
               : "没有更多话题"
             : undefined;
           if (text) {
-            return <TopicRow item={item} text={text} />;
+            return <TopicRow item={item} text={text} key="0" />;
           } else {
-            return <TopicRow item={item} topic={allTopics[item.index]} />;
+            return (
+              <TopicRow
+                item={item}
+                topic={allTopics[item.index]}
+                key={allTopics[item.index].id}
+              />
+            );
           }
         })}
       </div>
@@ -293,6 +299,10 @@ const TopicPage = ({
   const [beforePage, setBeforePage] = useState("");
   const [enterAfter, setEnterAfter] = useState(false);
   const [afterPage, setAfterPage] = useState("");
+
+  const PageContentCard = styled(ContentCard)`
+    width: ${className?.includes(DOUBLE_WIDTH) ? "50%" : "33.3333333%"};
+  `;
 
   const PageItem = ({ p, isActive }: { p: number; isActive?: boolean }) => {
     return (
@@ -320,35 +330,9 @@ const TopicPage = ({
     topicPageQueryOptions(currentPage)
   );
 
-  const topics: TopicProp[] = [];
-
-  const displayTopic = (data: {
-    topics: TopicProp[];
-    avatar: UserAvatarInfo[];
-  }) => {
-    return data.topics.map((t: TopicProp, i: number) => {
-      const ava = data.avatar.find((info) => info.id == t.creatorId);
-      return (
-        <div className={`relative mx-1 my-1 ${classes.topic}`}>
-          <div className={`w-[400px] h-[100px] grow-0  flex gap-2`} key={i}>
-            {ava?.avatar && (
-              <img
-                src={`data:image/png;base64, ${ava.avatar}`}
-                className="h-[60px] max-w-[60px]  self-center"
-              />
-            )}
-            <div className="">
-              <h3 className="my-2">{t.topic}</h3>
-              <span className="text-gray-400 w-[300px] text-ellipsis inline-block overflow-hidden">
-                hahahahahahahahahahahahahahahahahahahahahahahahhahaha
-              </span>
-            </div>
-          </div>
-          <div
-            className={`w-[400px] h-[100px] grow-0 ${classes.overlay}`}
-          ></div>
-        </div>
-      );
+  const displayTopic = (data: { topics: TopicWithAvatar[] }) => {
+    return data.topics.map((t: TopicWithAvatar, i: number) => {
+      return <PageContentCard content={t} />;
     });
   };
 
@@ -356,14 +340,16 @@ const TopicPage = ({
     <>
       <Card
         className={cn(
-          "relative left-1/2 -translate-x-1/2 w-[1300px] h-[450px] mb-3 flex flex-wrap justify-center",
-          status == "pending" || isPlaceholderData ? "opacity-30" : ""
+          `relative  flex flex-wrap justify-center`,
+          status == "pending" || isPlaceholderData ? "opacity-30" : "",
+          className,
+          `left-1/2 -translate-x-1/2 h-[500px]`
         )}
       >
         {isSuccess ? displayTopic(data) : <div>loading..</div>}
       </Card>
       {
-        <Pagination>
+        <Pagination className={cn(className, "mt-3")}>
           <PaginationContent>
             {currentPage > 1 && (
               <Fragment>
@@ -396,8 +382,7 @@ const TopicPage = ({
                       buttonVariants({
                         variant: "outline",
                         size: "icon",
-                      }),
-                      className
+                      })
                     )}
                     onKeyUp={(ev) => {
                       if (ev.key == "Enter") {
@@ -437,8 +422,7 @@ const TopicPage = ({
                       buttonVariants({
                         variant: "outline",
                         size: "icon",
-                      }),
-                      className
+                      })
                     )}
                     onKeyUp={(ev) => {
                       if (ev.key == "Enter") {
@@ -497,11 +481,30 @@ const TopicContainer = ({
   });
   return (
     <div className={className}>
-      <Media at="sm" className="h-full">
-        <TopicScroll query={query} />
+      <Media at="sm">
+        {(className) => {
+          return <TopicScroll query={query} className={className} />;
+        }}
       </Media>
-      <Media greaterThanOrEqual="lg" className="h-full">
-        <TopicPage topicCount={topicCount} />
+      <Media at="md">
+        {(className) => {
+          return (
+            <TopicPage
+              topicCount={topicCount}
+              className={cn(className, DOUBLE_WIDTH)}
+            />
+          );
+        }}
+      </Media>
+      <Media greaterThanOrEqual="lg">
+        {(className) => {
+          return (
+            <TopicPage
+              topicCount={topicCount}
+              className={cn(className, TRIPLE_WIDTH)}
+            />
+          );
+        }}
       </Media>
     </div>
   );

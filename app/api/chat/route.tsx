@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { TopicCursor, TopicResponse } from "@/components/ui/TopicCard";
 import type { Topic as TopicProp } from "@prisma/client";
-import { UserAvatarInfo } from "@/components/ui/TopicCard";
+import { UserAvatarInfo, TopicWithAvatar } from "@/components/ui/TopicCard";
 
 export interface ChatCreateReq {
   creatorId: string;
@@ -43,22 +43,22 @@ const getTopics = async (cursor: TopicCursor) => {
 };
 
 const getAvatar = async (topics: TopicProp[]) => {
-  let ids = new Set<string>();
-  topics.forEach((t) => ids.add(t.creatorId));
-  let avatars: UserAvatarInfo[] = [];
-
-  for (const i of ids) {
+  let topics_with_avatar: TopicWithAvatar[] = [];
+  for (const t of topics) {
     const user = await prisma.user.findUnique({
       where: {
-        id: i,
+        id: t.creatorId,
       },
     });
     if (user && user.avatar) {
-      avatars.push({ id: i, avatar: user.avatar.toString("base64") });
+      topics_with_avatar.push({
+        ...t,
+        avatar: user && user.avatar ? user.avatar.toString("base64") : null,
+      });
     }
   }
 
-  return avatars;
+  return topics_with_avatar;
 };
 
 export async function POST(req: NextRequest) {
@@ -83,17 +83,18 @@ export async function GET(req: NextRequest) {
     const hasMore = topics.length > limit;
 
     topics = topics.slice(0, limit); // getTopics tries to get one more, remove here
+    const topicWithAvatar = await getAvatar(topics);
 
     if (topics.length == 0) {
       return NextResponse.json(
-        { last_id: last_id, topics: topics, hasMore: hasMore },
+        { last_id: last_id, topics: topicWithAvatar, hasMore: hasMore },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
         {
           last_id: topics[topics.length - 1].id,
-          topics: topics,
+          topics: topicWithAvatar,
           hasMore: hasMore,
         },
         { status: 200 }
@@ -114,11 +115,8 @@ export async function GET(req: NextRequest) {
         id: "asc",
       },
     });
-    const avatarInfo = await getAvatar(topics);
-    return NextResponse.json(
-      { topics: topics, avatar: avatarInfo },
-      { status: 200 }
-    );
+    const topicWithAvatar = await getAvatar(topics);
+    return NextResponse.json({ topics: topicWithAvatar }, { status: 200 });
   } else {
     return NextResponse.json(null, { status: 400 });
   }
