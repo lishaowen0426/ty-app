@@ -1,12 +1,6 @@
 "use client";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { UserButton } from "./UserInfo";
 import {
   Select,
   SelectContent,
@@ -14,25 +8,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+
+import { Pagination } from "@nextui-org/pagination";
 
 import { z } from "zod";
 
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import classes from "@/components/style/TopicCard.module.css";
-import { Fragment, Suspense, use } from "react";
 import {
   useInfiniteQuery,
   QueryFunctionContext,
@@ -43,7 +29,6 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Topic as TopicProp } from "@prisma/client";
 import { Media } from "@/components/Media";
-import { InfiniteData } from "@tanstack/query-core";
 import { VirtualItem } from "@tanstack/virtual-core";
 import styled from "styled-components";
 import { cn } from "@/lib/utils";
@@ -51,7 +36,7 @@ import { cn } from "@/lib/utils";
 const TOPIC_PER_PAGE = 12;
 const DOUBLE_WIDTH = "w-[800px]";
 const TRIPLE_WIDTH = "w-[1200px]";
-const TOPIC_PAGE_HEIGHT = "500"; // in pixel
+const TOPIC_PAGE_HEIGHT = "800"; // in pixel
 
 export interface UserAvatarInfo {
   id: string;
@@ -65,9 +50,11 @@ export interface TopicWithAvatar extends TopicProp {
 export const ContentCard = ({
   content,
   className,
+  style,
 }: {
   content: TopicWithAvatar | string;
   className?: string;
+  style?: React.CSSProperties;
 }) => {
   if (typeof content == "string") {
     return (
@@ -78,8 +65,9 @@ export const ContentCard = ({
   } else {
     return (
       <div
-        className={`relative flex ${classes.topic} ${className}`}
+        className={`relative flex ${classes.topic} ${className} `}
         key={content.id}
+        style={style}
       >
         {content.avatar && (
           <img
@@ -155,24 +143,17 @@ const fetchTopic = async (
   return response.json();
 };
 
-const TopicScroll = ({
-  query,
-  className,
-}: {
-  query: ReturnType<
-    typeof useInfiniteQuery<
-      TopicResponse,
-      Error,
-      InfiniteData<TopicResponse, unknown>,
-      string[],
-      {
-        last_id: number;
-        limit: number;
-      }
-    >
-  >;
-  className?: string;
-}) => {
+const VirtualItem = styled(ContentCard)<{ $item: VirtualItem }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: ${(props) => props.$item.size}px;
+  transform: translateY(${(props) => props.$item.start}px);
+  padding: 10px;
+`;
+
+const TopicScroll = ({ className }: { className?: string }) => {
   const parent = useRef<HTMLDivElement>(null);
   const {
     status,
@@ -182,7 +163,18 @@ const TopicScroll = ({
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = query;
+  } = useInfiniteQuery({
+    queryKey: ["topics"],
+    queryFn: fetchTopic,
+    initialPageParam: { last_id: 0, limit: TOPIC_PER_PAGE },
+    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
+      if (!lastPage.hasMore) {
+        return null;
+      } else {
+        return { last_id: lastPage.last_id, limit: lastPageParam.limit };
+      }
+    },
+  });
 
   const allTopics = data
     ? data.pages.flatMap((res: TopicResponse) => res.topics)
@@ -226,22 +218,12 @@ const TopicScroll = ({
     topic?: TopicWithAvatar;
     text?: string;
   }) => {
-    const VirtualItem = styled(ContentCard)`
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: ${item.size}px;
-      transform: translateY(${item.start}px);
-      padding: 10px;
-    `;
-
     if (text) {
-      return <VirtualItem content={text} />;
+      return <VirtualItem content={text} $item={item} />;
     }
 
     if (topic) {
-      return <VirtualItem content={topic} />;
+      return <VirtualItem content={topic} $item={item} />;
     }
   };
 
@@ -285,6 +267,9 @@ const TopicScroll = ({
   );
 };
 
+const PageContentCard = styled(ContentCard)<{ $width: string }>`
+  width: ${(props) => props.$width};
+`;
 const TopicPage = ({
   topicCount,
   className,
@@ -295,22 +280,6 @@ const TopicPage = ({
   const totalPage = Math.ceil(topicCount / TOPIC_PER_PAGE);
 
   const [currentPage, setPage] = useState(1);
-  const [enterBefore, setEnterBefore] = useState(false);
-  const [beforePage, setBeforePage] = useState("");
-  const [enterAfter, setEnterAfter] = useState(false);
-  const [afterPage, setAfterPage] = useState("");
-
-  const PageContentCard = styled(ContentCard)`
-    width: ${className?.includes(DOUBLE_WIDTH) ? "50%" : "33.3333333%"};
-  `;
-
-  const PageItem = ({ p, isActive }: { p: number; isActive?: boolean }) => {
-    return (
-      <PaginationItem>
-        <PaginationLink isActive={isActive}>{p}</PaginationLink>
-      </PaginationItem>
-    );
-  };
 
   const fetchTopicPage = (page: number) =>
     fetch(`/api/chat?page=${page}&&count=${TOPIC_PER_PAGE}`, {
@@ -332,131 +301,44 @@ const TopicPage = ({
 
   const displayTopic = (data: { topics: TopicWithAvatar[] }) => {
     return data.topics.map((t: TopicWithAvatar, i: number) => {
-      return <PageContentCard content={t} />;
+      return (
+        <PageContentCard
+          content={t}
+          $width={className?.includes(DOUBLE_WIDTH) ? "50%" : "33.3333333%"}
+        />
+      );
     });
   };
 
   return (
-    <>
+    <div
+      className={cn(
+        className,
+        "relative left-1/2 -translate-x-1/2 flex flex-col gap-4"
+      )}
+    >
       <Card
         className={cn(
-          `relative  flex flex-wrap justify-center`,
+          `relative  flex flex-wrap justify-start items-stretch content-start`,
           status == "pending" || isPlaceholderData ? "opacity-30" : "",
           className,
-          `left-1/2 -translate-x-1/2 h-[500px]`
+          `left-1/2 -translate-x-1/2 h-[700px]`
         )}
       >
         {isSuccess ? displayTopic(data) : <div>loading..</div>}
       </Card>
-      {
-        <Pagination className={cn(className, "mt-3")}>
-          <PaginationContent>
-            {currentPage > 1 && (
-              <Fragment>
-                <PaginationItem>
-                  <PaginationPrevious
-                    text="上一页"
-                    onClick={() => {
-                      setPage((currentPage) => currentPage - 1);
-                    }}
-                  />
-                </PaginationItem>
-              </Fragment>
-            )}
-            {<PageItem p={1} isActive={currentPage == 1} />}
-            {currentPage > 1 && (
-              <Fragment>
-                {currentPage > 2 && !enterBefore && (
-                  <PaginationEllipsis
-                    onClick={() => {
-                      setEnterBefore(true);
-                    }}
-                  />
-                )}
-                {enterBefore && (
-                  <Input
-                    type="text"
-                    value={beforePage}
-                    onChange={(e) => setBeforePage(e.target.value)}
-                    className={cn(
-                      buttonVariants({
-                        variant: "outline",
-                        size: "icon",
-                      })
-                    )}
-                    onKeyUp={(ev) => {
-                      if (ev.key == "Enter") {
-                        const pageSchema = z
-                          .number()
-                          .int()
-                          .gte(1)
-                          .lte(totalPage);
-                        try {
-                          const toPage = pageSchema.parse(parseInt(beforePage));
-                          setPage(() => toPage);
-                        } catch (e) {}
-                        setEnterBefore(false);
-                      }
-                    }}
-                  />
-                )}
-                <PageItem p={currentPage} isActive />
-              </Fragment>
-            )}
-            {}
-            {totalPage > currentPage && (
-              <Fragment>
-                {totalPage - currentPage > 1 && !enterAfter && (
-                  <PaginationEllipsis
-                    onClick={() => {
-                      setEnterAfter(true);
-                    }}
-                  />
-                )}
-                {enterAfter && (
-                  <Input
-                    type="text"
-                    value={afterPage}
-                    onChange={(e) => setAfterPage(e.target.value)}
-                    className={cn(
-                      buttonVariants({
-                        variant: "outline",
-                        size: "icon",
-                      })
-                    )}
-                    onKeyUp={(ev) => {
-                      if (ev.key == "Enter") {
-                        const pageSchema = z
-                          .number()
-                          .int()
-                          .gte(1)
-                          .lte(totalPage);
-                        try {
-                          const toPage = pageSchema.parse(parseInt(afterPage));
-                          setPage(() => toPage);
-                        } catch (e) {}
-                        setEnterAfter(false);
-                      }
-                    }}
-                  />
-                )}
 
-                <PageItem p={totalPage} />
-                <PaginationItem>
-                  <PaginationNext
-                    text="下一页"
-                    onClick={() => {
-                      setPage((currentPage) => currentPage + 1);
-                      return false;
-                    }}
-                  />
-                </PaginationItem>
-              </Fragment>
-            )}
-          </PaginationContent>
-        </Pagination>
-      }
-    </>
+      <div className={cn("flex flex-row justify-between")}>
+        <Pagination
+          showControls
+          total={totalPage}
+          className={cn(className, "w-fit relative left-1/2 -translate-x-1/2")}
+          page={currentPage}
+          onChange={setPage}
+        />
+        <UserButton className={cn(className)} />
+      </div>
+    </div>
   );
 };
 
@@ -467,23 +349,11 @@ const TopicContainer = ({
   className?: string;
   topicCount: number;
 }) => {
-  const query = useInfiniteQuery({
-    queryKey: ["topics"],
-    queryFn: fetchTopic,
-    initialPageParam: { last_id: 0, limit: TOPIC_PER_PAGE },
-    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
-      if (!lastPage.hasMore) {
-        return null;
-      } else {
-        return { last_id: lastPage.last_id, limit: lastPageParam.limit };
-      }
-    },
-  });
   return (
     <div className={className}>
       <Media at="sm">
         {(className) => {
-          return <TopicScroll query={query} className={className} />;
+          return <TopicScroll className={className} />;
         }}
       </Media>
       <Media at="md">

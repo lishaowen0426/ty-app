@@ -1,6 +1,5 @@
-import TopicCard from "@/components/ui/TopicCard";
+import TopicCardNoSSR from "@/components/ui/TopicCardNoSSR";
 import { UserInfo, UserButton } from "@/components/ui/UserInfo";
-import { Suspense } from "react";
 import prisma from "@/lib/prisma";
 
 export const Header = ({ title }: { title: string }) => {
@@ -22,10 +21,7 @@ export default async function Dashboard() {
   return (
     <div className="h-full flex flex-col justify-start">
       <Header title="聊天室" />
-      <Suspense fallback={<p>载入话题中</p>}>
-        <TopicCard className="" topicCount={topicCount} />
-      </Suspense>
-      <UserButton />
+      <TopicCardNoSSR className="" topicCount={topicCount} />
     </div>
   );
 }

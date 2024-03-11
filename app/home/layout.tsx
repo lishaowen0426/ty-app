@@ -4,6 +4,7 @@ import { AvatarContext } from "@/components/ui/AvatarProvider";
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MediaContextProvider } from "@/components/Media";
+import { NextUIProvider } from "@nextui-org/system";
 
 const queryClient = new QueryClient();
 
@@ -19,7 +20,7 @@ export default function HomeLayout({
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
           <AvatarContext.Provider value={value}>
-            {children}
+            <NextUIProvider>{children}</NextUIProvider>
           </AvatarContext.Provider>
         </SessionProvider>
       </QueryClientProvider>

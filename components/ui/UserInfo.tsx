@@ -18,10 +18,12 @@ import { Button } from "./button";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
 import DropdownMenuWithDialog, {
   DialogItem,
 } from "@/components/ui/DropdownDialog";
 import Profile from "@/components/ui/ProfileCard";
+import { Media } from "@/components/Media";
 
 const UserInfo = forwardRef<HTMLImageElement, { className?: string }>(
   ({ className }, ref) => {
@@ -78,11 +80,19 @@ const UserInfo = forwardRef<HTMLImageElement, { className?: string }>(
   }
 );
 
-const UserButton = () => {
+const UserButton = ({ className }: { className?: string }) => {
   const { data: session, status } = useSession();
   const B = (
-    <Button className="bg-black text-white ml-auto mb-[1rem] mr-[1rem] mt-[1rem]">
-      <ChevronRight className="h-4 w-4" /> 创建聊天室
+    <Button
+      className={cn(
+        "bg-black text-white",
+        className,
+        "w-[50px] md:w-[60px] lg:w-[100px]"
+      )}
+    >
+      <ChevronRight className="h-4 w-4" />
+      <Media at="md">创建</Media>
+      <Media greaterThanOrEqual="lg">创建聊天室</Media>
     </Button>
   );
 
