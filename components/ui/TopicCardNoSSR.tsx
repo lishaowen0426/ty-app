@@ -2,7 +2,6 @@ import dynamic from "next/dynamic";
 
 const ClientTopicCard = dynamic(() => import("./TopicCard"), {
   ssr: false,
-  loading: () => <p>加载中</p>,
 });
 
 const TopicCardNoSSR = ({

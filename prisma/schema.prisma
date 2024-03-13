@@ -19,16 +19,18 @@ enum Role {
 // model naming convention:
 // PascalCase and singular form
 model User {
-  id            String    @id @default(cuid())
-  createdAt     DateTime? @default(now())
-  email         String    @unique
-  password      String?
-  emailVerified DateTime?
-  name          String?
-  avatar        Bytes?
-  accounts      Account[]
-  sessions      Session[]
-  Topic         Topic[]
+  id               String    @id @default(cuid())
+  createdAt        DateTime? @default(now())
+  email            String    @unique
+  password         String?
+  emailVerified    DateTime?
+  name             String?
+  avatar           Bytes?
+  accounts         Account[]
+  sessions         Session[]
+  createdTopics    Topic[]   @relation("Creator")
+  joinedTopics     Topic[]   @relation("Participants")
+  bookmarkedTopics Topic[]   @relation("Bookmark")
 }
 
 model Account {
@@ -67,13 +69,24 @@ model VerificationToken {
 }
 
 model Topic {
-  id        Int       @id @default(autoincrement())
-  creator   User      @relation(fields: [creatorId], references: [id])
+  id        String    @id @default(cuid()) @db.VarChar(30)
+  creator   User      @relation("Creator", fields: [creatorId], references: [id])
   creatorId String
   createdAt DateTime? @default(now())
 
-  topic String
-  tags  String[] @default([""])
+  topic       String
+  description String
+
+  participants User[] @relation("Participants")
+  bookmarkedBy User[] @relation("Bookmark")
+
+  categories TopicCategory[]
 
   @@unique([creatorId, topic])
+}
+
+model TopicCategory {
+  id       Int     @id @default(autoincrement())
+  category String  @unique @db.VarChar(10)
+  topics   Topic[]
 }
