@@ -69,13 +69,13 @@ model VerificationToken {
 }
 
 model Topic {
-  id        String    @id @default(cuid()) @db.VarChar(30)
-  creator   User      @relation("Creator", fields: [creatorId], references: [id])
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  creator   User     @relation("Creator", fields: [creatorId], references: [id])
   creatorId String
-  createdAt DateTime? @default(now())
+  createdAt DateTime @default(now())
 
   topic       String
-  description String
+  description String?
 
   participants User[] @relation("Participants")
   bookmarkedBy User[] @relation("Bookmark")
@@ -83,6 +83,7 @@ model Topic {
   categories TopicCategory[]
 
   @@unique([creatorId, topic])
+  @@index([createdAt(sort: Desc)])
 }
 
 model TopicCategory {

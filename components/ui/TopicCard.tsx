@@ -121,12 +121,12 @@ const TopicHeader = () => {
 };
 
 export interface TopicCursor {
-  last_id: number;
+  last_id?: string;
   limit: number;
 }
 
 export interface TopicResponse {
-  last_id: number;
+  last_id: string;
   topics: TopicWithAvatar[];
   hasMore: boolean;
 }
@@ -136,9 +136,12 @@ const fetchTopic = async (
 ): Promise<TopicResponse> => {
   const { last_id, limit } = ctx.pageParam;
 
-  const response = await fetch(`/api/chat?lastid=${last_id}&limit=${limit}`, {
-    method: "GET",
-  });
+  const response = await fetch(
+    `/api/chat?limit=${limit}${last_id && "&last_id=" + last_id}`,
+    {
+      method: "GET",
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -170,7 +173,7 @@ const TopicScroll = ({ className }: { className?: string }) => {
   } = useInfiniteQuery({
     queryKey: ["topics"],
     queryFn: fetchTopic,
-    initialPageParam: { last_id: 0, limit: TOPIC_PER_PAGE },
+    initialPageParam: { limit: TOPIC_PER_PAGE },
     getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
       if (!lastPage.hasMore) {
         return null;

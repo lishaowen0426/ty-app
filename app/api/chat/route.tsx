@@ -20,7 +20,7 @@ const createChatFn = async (req: ChatCreateReq) => {
 };
 
 const getTopics = async (cursor: TopicCursor) => {
-  if (cursor.last_id == 0) {
+  if (cursor.last_id == "0") {
     //initial request
     return prisma.topic.findMany({
       take: cursor.limit + 1, //take one more so we can decide hasMore
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
   const params = new URL(req.url).searchParams;
 
   if (params.has("lastid") && params.has("limit")) {
-    const last_id = parseInt(params.get("lastid")!);
+    const last_id = params.get("lastid")!;
     const limit = parseInt(params.get("limit")!);
 
     let topics = await getTopics({ last_id: last_id, limit: limit });
