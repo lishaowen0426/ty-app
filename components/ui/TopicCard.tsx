@@ -68,6 +68,10 @@ export const ContentCard = ({
         className={`relative flex ${classes.topic} ${className} `}
         key={content.id}
         style={style}
+        onClick={(ev: React.MouseEvent<HTMLDivElement>) => {
+          ev.preventDefault();
+          console.log(content);
+        }}
       >
         {content.avatar && (
           <img
@@ -267,8 +271,12 @@ const TopicScroll = ({ className }: { className?: string }) => {
   );
 };
 
-const PageContentCard = styled(ContentCard)<{ $width: string }>`
+const PageContentCard = styled(ContentCard)<{
+  $width: string;
+  $height: string;
+}>`
   width: ${(props) => props.$width};
+  height: ${(props) => props.$height};
 `;
 const TopicPage = ({
   topicCount,
@@ -303,8 +311,10 @@ const TopicPage = ({
     return data.topics.map((t: TopicWithAvatar, i: number) => {
       return (
         <PageContentCard
+          key={t.id}
           content={t}
           $width={className?.includes(DOUBLE_WIDTH) ? "50%" : "33.3333333%"}
+          $height={className?.includes(DOUBLE_WIDTH) ? "16.66667%" : "25%"}
         />
       );
     });
@@ -319,7 +329,7 @@ const TopicPage = ({
     >
       <Card
         className={cn(
-          `relative  flex flex-wrap justify-start items-stretch content-start`,
+          `relative  flex flex-wrap justify-start items-start gap-x-0`,
           status == "pending" || isPlaceholderData ? "opacity-30" : "",
           className,
           `left-1/2 -translate-x-1/2 h-[700px]`
