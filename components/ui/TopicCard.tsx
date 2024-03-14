@@ -121,33 +121,66 @@ const TopicHeader = () => {
 };
 
 export interface TopicCursor {
-  last_id?: string;
+  cursor?: string;
   limit: number;
 }
 
 export interface TopicResponse {
-  last_id: string;
+  cursor: string;
   topics: TopicWithAvatar[];
   hasMore: boolean;
 }
 
-const fetchTopic = async (
-  ctx: QueryFunctionContext<string[], TopicCursor>
-): Promise<TopicResponse> => {
-  const { last_id, limit } = ctx.pageParam;
-
-  const response = await fetch(
-    `/api/chat?limit=${limit}${last_id && "&last_id=" + last_id}`,
-    {
-      method: "GET",
-    }
+function isTopicResponse(obj: any): obj is TopicResponse {
+  let resp = obj as TopicResponse;
+  return (
+    resp.cursor !== undefined &&
+    resp.topics !== undefined &&
+    resp.hasMore !== undefined
   );
+}
 
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
+const fetchTopic = async (
+  ctx:
+    | QueryFunctionContext<string[], TopicCursor>
+    | { page: number; limit: number }
+): Promise<TopicResponse> => {
+  let page: number | undefined = undefined;
+  let limit: number = 0;
+  let cursor: string | undefined = undefined;
+
+  if ("page" in ctx) {
+    page = ctx.page;
+    limit = ctx.limit;
+  } else {
+    cursor = ctx.pageParam.cursor;
+    limit = ctx.pageParam.limit;
   }
+  try {
+    const response = await fetch(
+      `/api/chat?limit=${limit}${cursor ? "&&cursor=" + cursor : ""}${
+        page ? "&&page=" + page : ""
+      }`,
+      {
+        method: "GET",
+      }
+    );
 
-  return response.json();
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    let topicResp = await response.json();
+
+    if (isTopicResponse(topicResp)) {
+      return topicResp;
+    } else {
+      throw new Error("Unrecognized response: ", topicResp);
+    }
+  } catch (e) {
+    console.log("fetch error: ", e);
+    throw e;
+  }
 };
 
 const VirtualItem = styled(ContentCard)<{ $item: VirtualItem }>`
@@ -166,6 +199,7 @@ const TopicScroll = ({ className }: { className?: string }) => {
     status,
     data,
     error,
+    isError,
     isFetching,
     isFetchingNextPage,
     fetchNextPage,
@@ -178,7 +212,7 @@ const TopicScroll = ({ className }: { className?: string }) => {
       if (!lastPage.hasMore) {
         return null;
       } else {
-        return { last_id: lastPage.last_id, limit: lastPageParam.limit };
+        return { cursor: lastPage.cursor, limit: lastPageParam.limit };
       }
     },
   });
@@ -233,6 +267,10 @@ const TopicScroll = ({ className }: { className?: string }) => {
       return <VirtualItem content={topic} $item={item} />;
     }
   };
+
+  if (isError) {
+    return <div>Fetch topic error...</div>;
+  }
 
   return (
     <Card
@@ -292,15 +330,14 @@ const TopicPage = ({
 
   const [currentPage, setPage] = useState(1);
 
-  const fetchTopicPage = (page: number) =>
-    fetch(`/api/chat?page=${page}&&count=${TOPIC_PER_PAGE}`, {
-      method: "GET",
-    }).then((res) => res.json());
-
   const topicPageQueryOptions = (page: number) => {
     return queryOptions({
       queryKey: ["topics", page],
-      queryFn: () => fetchTopicPage(page),
+      queryFn: () =>
+        fetchTopic({
+          page: page,
+          limit: TOPIC_PER_PAGE,
+        }),
       placeholderData: keepPreviousData,
       staleTime: 2 * 60 * 1000, //2 min
       gcTime: 5 * 60 * 1000,
@@ -310,7 +347,7 @@ const TopicPage = ({
     topicPageQueryOptions(currentPage)
   );
 
-  const displayTopic = (data: { topics: TopicWithAvatar[] }) => {
+  const displayTopic = (data: TopicResponse) => {
     return data.topics.map((t: TopicWithAvatar, i: number) => {
       return (
         <PageContentCard
