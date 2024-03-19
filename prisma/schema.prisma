@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,14 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  Student
-  Teacher
-  Admin
-}
-
-// model naming convention:
-// PascalCase and singular form
 model User {
   id               String    @id @default(cuid())
   createdAt        DateTime? @default(now())
@@ -29,8 +18,8 @@ model User {
   accounts         Account[]
   sessions         Session[]
   createdTopics    Topic[]   @relation("Creator")
-  joinedTopics     Topic[]   @relation("Participants")
   bookmarkedTopics Topic[]   @relation("Bookmark")
+  joinedTopics     Topic[]   @relation("Participants")
 }
 
 model Account {
@@ -39,15 +28,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -69,18 +57,15 @@ model VerificationToken {
 }
 
 model Topic {
-  id        String   @id @default(cuid()) @db.VarChar(30)
-  creator   User     @relation("Creator", fields: [creatorId], references: [id])
-  creatorId String
-  createdAt DateTime @default(now())
-
-  topic       String
-  description String?
-
-  participants User[] @relation("Participants")
-  bookmarkedBy User[] @relation("Bookmark")
-
-  categories TopicCategory[]
+  creatorId    String
+  createdAt    DateTime        @default(now())
+  topic        String
+  id           String          @id @default(cuid()) @db.VarChar(30)
+  description  String?
+  creator      User            @relation("Creator", fields: [creatorId], references: [id])
+  bookmarkedBy User[]          @relation("Bookmark")
+  participants User[]          @relation("Participants")
+  categories   TopicCategory[] @relation("TopicToTopicCategory")
 
   @@unique([creatorId, topic])
   @@index([createdAt(sort: Desc)])
@@ -89,5 +74,5 @@ model Topic {
 model TopicCategory {
   id       Int     @id @default(autoincrement())
   category String  @unique @db.VarChar(10)
-  topics   Topic[]
+  topics   Topic[] @relation("TopicToTopicCategory")
 }

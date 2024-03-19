@@ -3,6 +3,8 @@ import random
 import string
 import sys
 import hashlib
+import datetime
+from cuid2 import Cuid
 
 import psycopg2
 
@@ -50,21 +52,53 @@ HASHED_PASSWORD = bytes.hex(hasher.digest())
 USERNAME_LENGTH = 5
 EMAIL_HOST = "@tysoft.com"
 
+CUID_GENERATOR: Cuid = Cuid(length=25)
+
 
 def generateRandomText(len):
     return "".join(random.choices(string.ascii_lowercase + string.digits, k=len))
 
 
 def generateUser(cur, count, output):
-    for _ in range(count):
-        name = f"{generateRandomText(USERNAME_LENGTH)}"
-        email = f"{name}{EMAIL_HOST}"
-        print(f"{email} {PASSWORD}")
-
+    userinfo = []
+    with open(output, "a") as f:
+        for _ in range(count):
+            name = f"{generateRandomText(USERNAME_LENGTH)}"
+            email = f"{name}{EMAIL_HOST}"
+            userinfo.append(f"{email} {PASSWORD}")
+            cur.execute(
+                """
+                    INSERT INTO "User" (email, password, name, "emailVerified", id)    
+                    VALUES (%s, %s, %s, %s, %s)
+                """,
+                (
+                    email,
+                    HASHED_PASSWORD,
+                    name,
+                    datetime.date(2024, 3, 19),
+                    CUID_GENERATOR.generate(),
+                ),
+            )
+            f.write(f"{email} {PASSWORD}\n")
     return
 
 
 def generateTopic(cur, count):
+    cur.execute(
+        """
+               SELECT id FROM "User" LIMIT 1000 
+                """
+    )
+    creatorIds = list(map(lambda r: r[0], cur.fetchall()))
+
+    def creator_id():
+        return random.choice(creatorIds)
+
+    for _ in range(count):
+        creator = creator_id()
+        topic = generateRandomText(10)
+        des = generateRandomText(30)
+
     return
 
 
@@ -94,7 +128,6 @@ if __name__ == "__main__":
     conn = psycopg2.connect(
         dbname="test", user="test", password="test", host="localhost", port=5432
     )
-    userinfo = open("user_info", "a")
     with conn:
         with conn.cursor() as cur:
             match args.command:
@@ -102,9 +135,9 @@ if __name__ == "__main__":
                     generateUser(
                         cur,
                         args.count,
-                        userinfo,
+                        "user_info",
                     )
                 case "topic":
-                    print("topic")
+                    generateTopic(cur, args.count)
                 case _:
                     print("unknown command")

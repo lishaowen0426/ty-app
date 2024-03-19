@@ -12,8 +12,8 @@ const refreshTopicView = new SmartAsyncInterval(async () => {
   //console.log(`refresh topic view...${Date.now()}`);
   return await prisma.$executeRaw`REFRESH MATERIALIZED VIEW "TopicByCreationDate"`;
 }, REFRESH_VIEW_DELAY_MS);
-console.log(`start topic view refresher ${Date.now}`);
-refreshTopicView.start();
+//console.log("start topic view refresher: ", Date.now());
+//refreshTopicView.start();
 
 export interface ChatCreateReq {
   creatorId: string;
@@ -62,22 +62,18 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const params = new URL(req.url).searchParams;
-  console.log(params);
 
-  let limit = params.get("limit");
-  const cursor = params.get("cursor");
-  let page = params.get("page");
+  let from = params.get("from");
+  let to = params.get("to");
 
-  if (
-    limit === undefined || //limit must be defined
-    (cursor && page) // they can neither be both defined
-  ) {
-    return NextResponse.json(null, { status: 400 });
-  } else if (page) {
-    //pagination
-    return NextResponse.json(null, { status: 200 });
+  if (from && to) {
+    const topics =
+      await prisma.$queryRaw`SELECT * FROM "TopicByCreationDate" WHERE index >= ${parseInt(
+        from
+      )} AND index < ${parseInt(to)}`;
+    console.log(topics);
+    return NextResponse.json({ topics: topics }, { status: 200 });
   } else {
-    // infinite scroll
-    return NextResponse.json(null, { status: 200 });
+    return NextResponse.json(null, { status: 400 });
   }
 }

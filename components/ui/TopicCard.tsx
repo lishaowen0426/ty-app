@@ -82,7 +82,7 @@ export const ContentCard = ({
         <div className="grow-1 min-w-0 block">
           <h3 className="my-2">{content.topic}</h3>
           <span className="w-full text-gray-400  text-ellipsis inline-block overflow-hidden">
-            hahahahahahahahahahahahahahahahahahahahahahahahhahaha
+            {content.description}
           </span>
         </div>
         <div className={`w-full h-full grow-0 ${classes.overlay}`}></div>
@@ -121,66 +121,35 @@ const TopicHeader = () => {
 };
 
 export interface TopicCursor {
-  cursor?: string;
-  limit: number;
+  from: number; //inclusive
+  to: number; //exclusive
 }
 
 export interface TopicResponse {
-  cursor: string;
   topics: TopicWithAvatar[];
-  hasMore: boolean;
-}
-
-function isTopicResponse(obj: any): obj is TopicResponse {
-  let resp = obj as TopicResponse;
-  return (
-    resp.cursor !== undefined &&
-    resp.topics !== undefined &&
-    resp.hasMore !== undefined
-  );
 }
 
 const fetchTopic = async (
   ctx:
     | QueryFunctionContext<string[], TopicCursor>
-    | { page: number; limit: number }
+    | { from: number; to: number }
 ): Promise<TopicResponse> => {
-  let page: number | undefined = undefined;
-  let limit: number = 0;
-  let cursor: string | undefined = undefined;
-
-  if ("page" in ctx) {
-    page = ctx.page;
-    limit = ctx.limit;
+  let endpoint = "";
+  if ("from" in ctx) {
+    endpoint = `/api/chat?from=${ctx.from}&&to=${ctx.to}`;
   } else {
-    cursor = ctx.pageParam.cursor;
-    limit = ctx.pageParam.limit;
+    endpoint = `/api/chat?from=${ctx.pageParam.from}&&to=${ctx.pageParam.to}`;
   }
-  try {
-    const response = await fetch(
-      `/api/chat?limit=${limit}${cursor ? "&&cursor=" + cursor : ""}${
-        page ? "&&page=" + page : ""
-      }`,
-      {
-        method: "GET",
-      }
-    );
 
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    let topicResp = await response.json();
-
-    if (isTopicResponse(topicResp)) {
-      return topicResp;
+  return fetch(endpoint, {
+    method: "GET",
+  }).then((resp) => {
+    if (!resp.ok) {
+      throw new Error(`fetch topic error ${resp.status}`);
     } else {
-      throw new Error("Unrecognized response: ", topicResp);
+      return resp.json();
     }
-  } catch (e) {
-    console.log("fetch error: ", e);
-    throw e;
-  }
+  });
 };
 
 const VirtualItem = styled(ContentCard)<{ $item: VirtualItem }>`
@@ -207,12 +176,15 @@ const TopicScroll = ({ className }: { className?: string }) => {
   } = useInfiniteQuery({
     queryKey: ["topics"],
     queryFn: fetchTopic,
-    initialPageParam: { limit: TOPIC_PER_PAGE },
+    initialPageParam: { from: 1, to: 1 + TOPIC_PER_PAGE },
     getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
       if (!lastPage.hasMore) {
         return null;
       } else {
-        return { cursor: lastPage.cursor, limit: lastPageParam.limit };
+        return {
+          from: lastPageParam.to,
+          to: lastPageParam.to + TOPIC_PER_PAGE,
+        };
       }
     },
   });
@@ -335,8 +307,8 @@ const TopicPage = ({
       queryKey: ["topics", page],
       queryFn: () =>
         fetchTopic({
-          page: page,
-          limit: TOPIC_PER_PAGE,
+          from: 1 + (page - 1) * TOPIC_PER_PAGE,
+          to: 1 + page * TOPIC_PER_PAGE,
         }),
       placeholderData: keepPreviousData,
       staleTime: 2 * 60 * 1000, //2 min

@@ -13,7 +13,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "chat": "ts-node -r dotenv/config server.ts"
+    "chat": "ts-node -r dotenv/config server.ts",
+    "db": "ts-node scripts/db.ts"
   },
   "dependencies": {
     "@artsy/fresnel": "^7.1.4",
@@ -42,6 +43,7 @@
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "commander": "^12.0.0",
     "crypto-js": "^4.2.0",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
