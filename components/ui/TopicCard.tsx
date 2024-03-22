@@ -162,7 +162,13 @@ const VirtualItem = styled(ContentCard)<{ $item: VirtualItem }>`
   padding: 10px;
 `;
 
-const TopicScroll = ({ className }: { className?: string }) => {
+const TopicScroll = ({
+  className,
+  topicCount,
+}: {
+  className?: string;
+  topicCount: number;
+}) => {
   const parent = useRef<HTMLDivElement>(null);
   const {
     status,
@@ -178,7 +184,7 @@ const TopicScroll = ({ className }: { className?: string }) => {
     queryFn: fetchTopic,
     initialPageParam: { from: 1, to: 1 + TOPIC_PER_PAGE },
     getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
-      if (!lastPage.hasMore) {
+      if (lastPageParam.to > topicCount) {
         return null;
       } else {
         return {
@@ -231,6 +237,7 @@ const TopicScroll = ({ className }: { className?: string }) => {
     topic?: TopicWithAvatar;
     text?: string;
   }) => {
+    console.log(item);
     if (text) {
       return <VirtualItem content={text} $item={item} />;
     }
@@ -241,6 +248,7 @@ const TopicScroll = ({ className }: { className?: string }) => {
   };
 
   if (isError) {
+    console.log("hrtr");
     return <div>Fetch topic error...</div>;
   }
 
@@ -315,9 +323,15 @@ const TopicPage = ({
       gcTime: 5 * 60 * 1000,
     });
   };
-  const { status, error, data, isPlaceholderData, isSuccess } = useQuery(
-    topicPageQueryOptions(currentPage)
-  );
+  const {
+    status,
+    error,
+    data,
+    isPlaceholderData,
+    isSuccess,
+    isError,
+    isFetching,
+  } = useQuery(topicPageQueryOptions(currentPage));
 
   const displayTopic = (data: TopicResponse) => {
     return data.topics.map((t: TopicWithAvatar, i: number) => {
@@ -347,7 +361,8 @@ const TopicPage = ({
           `left-1/2 -translate-x-1/2 h-[700px]`
         )}
       >
-        {isSuccess ? displayTopic(data) : <div>loading..</div>}
+        {isSuccess && displayTopic(data)}
+        {isError && <div>error</div>}
       </Card>
 
       <div className={cn("flex flex-row justify-between")}>
@@ -375,7 +390,7 @@ const TopicContainer = ({
     <div className={className}>
       <Media at="sm">
         {(className) => {
-          return <TopicScroll className={className} />;
+          return <TopicScroll className={className} topicCount={topicCount} />;
         }}
       </Media>
       <Media at="md">
