@@ -1,5 +1,6 @@
 "use client";
 import { Card } from "@/components/ui/card";
+import { useMediaQuery } from "@uidotdev/usehooks";
 import { UserButton } from "./UserInfo";
 import {
   Select,
@@ -28,7 +29,6 @@ import {
 } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Topic as TopicProp } from "@prisma/client";
-import { Media } from "@/components/Media";
 import { VirtualItem } from "@tanstack/virtual-core";
 import styled from "styled-components";
 import { cn } from "@/lib/utils";
@@ -237,7 +237,6 @@ const TopicScroll = ({
     topic?: TopicWithAvatar;
     text?: string;
   }) => {
-    console.log(item);
     if (text) {
       return <VirtualItem content={text} $item={item} />;
     }
@@ -386,35 +385,28 @@ const TopicContainer = ({
   className?: string;
   topicCount: number;
 }) => {
-  return (
-    <div className={className}>
-      <Media at="sm">
-        {(className) => {
-          return <TopicScroll className={className} topicCount={topicCount} />;
-        }}
-      </Media>
-      <Media at="md">
-        {(className) => {
-          return (
-            <TopicPage
-              topicCount={topicCount}
-              className={cn(className, DOUBLE_WIDTH)}
-            />
-          );
-        }}
-      </Media>
-      <Media greaterThanOrEqual="lg">
-        {(className) => {
-          return (
-            <TopicPage
-              topicCount={topicCount}
-              className={cn(className, TRIPLE_WIDTH)}
-            />
-          );
-        }}
-      </Media>
-    </div>
+  const isSmallDevice = useMediaQuery("only screen and (max-width : 800px)");
+  const isMediumDevice = useMediaQuery(
+    "only screen and (min-width : 801px) and (max-width : 1200px)"
   );
+
+  if (isSmallDevice) {
+    return <TopicScroll className={className} topicCount={topicCount} />;
+  } else if (isMediumDevice) {
+    return (
+      <TopicPage
+        topicCount={topicCount}
+        className={cn(className, DOUBLE_WIDTH)}
+      />
+    );
+  } else {
+    return (
+      <TopicPage
+        topicCount={topicCount}
+        className={cn(className, TRIPLE_WIDTH)}
+      />
+    );
+  }
 };
 
 export default function TopicCard({

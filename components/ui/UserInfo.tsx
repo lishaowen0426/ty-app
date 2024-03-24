@@ -13,6 +13,7 @@ import { UserAvatar } from "@/components/ui/AvatarProvider";
 import { ChevronRight } from "lucide-react";
 import { SigninPopup, ChatPopup } from "@/components/ui/Popup";
 import { useRef, forwardRef, useState } from "react";
+import { useMediaQuery } from "@uidotdev/usehooks";
 import { Session } from "next-auth";
 import { Button } from "./button";
 import { useSession } from "next-auth/react";
@@ -23,7 +24,6 @@ import DropdownMenuWithDialog, {
   DialogItem,
 } from "@/components/ui/DropdownDialog";
 import Profile from "@/components/ui/ProfileCard";
-import { Media } from "@/components/Media";
 
 const UserInfo = forwardRef<HTMLImageElement, { className?: string }>(
   ({ className }, ref) => {
@@ -82,6 +82,7 @@ const UserInfo = forwardRef<HTMLImageElement, { className?: string }>(
 
 const UserButton = ({ className }: { className?: string }) => {
   const { data: session, status } = useSession();
+  const isMediumDevice = useMediaQuery("only screen and  (max-width : 1200px)");
   const B = (
     <Button
       className={cn(
@@ -91,8 +92,7 @@ const UserButton = ({ className }: { className?: string }) => {
       )}
     >
       <ChevronRight className="h-4 w-4" />
-      <Media at="md">创建</Media>
-      <Media greaterThanOrEqual="lg">创建聊天室</Media>
+      {isMediumDevice ? "创建" : "创建聊天室"}
     </Button>
   );
 
