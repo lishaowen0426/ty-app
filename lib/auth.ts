@@ -11,6 +11,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
+import * as ErrMsg from "@/lib/errmsg";
 
 export const handlers = async function auth(
   req: NextApiRequest,
@@ -26,22 +27,13 @@ export const handlers = async function auth(
           password: { label: "Password", type: "password" },
         },
         async authorize(credentials, req) {
-          if (!credentials?.email || !credentials?.password) {
+          if (
+            credentials?.email === undefined ||
+            !credentials?.password === undefined
+          ) {
             return null;
-          }
-
-          const Cred = z.object({
-            email: z.string(),
-            password: z.string(),
-          });
-
-          try {
-            const u = Cred.parse(credentials);
-            const user = await login(u.email, u.password);
-            return user;
-          } catch (e) {
-            console.log(e);
-            throw e;
+          } else {
+            return await login(credentials.email, credentials.password);
           }
         },
       }),
@@ -83,7 +75,7 @@ export const handlers = async function auth(
               console.log("SMTP connection failed with " + error);
             }
           });
-          const result = transport.sendMail({
+          transport.sendMail({
             to: identifier,
             from: provider.from,
             subject: `登陆到Distance`,
@@ -112,13 +104,14 @@ export const handlers = async function auth(
           const searchUrl = new URL(req.url ?? "");
           const status = searchUrl.searchParams.get("status");
           if (status == "signin" && !(await checkUser(user.email!))) {
-            return false;
+            return "http://localhost/error?error=" + ErrMsg.USERNOTFOUND;
           } else if (status == "signup" && (await checkUser(user.email!))) {
-            return false;
+            return "http://localhost/error?error=" + ErrMsg.USEREXISTS;
           } else {
             return true;
           }
         } else {
+          //after user activates the email link
           return true;
         }
       },
@@ -172,16 +165,16 @@ const login: LoginFn = async (email: string, password: string) => {
   });
 
   if (!user) {
-    throw new Error("found");
+    throw new Error(ErrMsg.USERNOTFOUND);
   }
 
   if (!user.password) {
-    throw new Error("set");
+    throw new Error(ErrMsg.PASSWORDNOTSET);
   }
   if (SHA256(password).toString(Hex) == user.password) {
     user.password = "set";
     return user;
-  } else throw new Error("wrong");
+  } else throw new Error(ErrMsg.WRONGPASSWORD);
 };
 
 const checkUser: CheckFn = async (email: string) => {

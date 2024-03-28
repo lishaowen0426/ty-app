@@ -1,8 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle } from "lucide-react";
 import { useState } from "react";
+import * as ErrMsg from "@/lib/errmsg";
+import { useSearchParams } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -23,12 +24,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn, signOut } from "next-auth/react";
 import { SubmitHandler, SubmitErrorHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { SigninButton } from "@/components/ui/AuthButton";
 import AuthCard, { AuthCardProps } from "@/components/ui/AuthCard";
-import { redirect, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
-import { useEffect } from "react";
 import { IconButton } from "@/components/ui/AuthButton";
 import { Send, SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -37,9 +35,9 @@ const LoginButton = () => {
   return (
     <IconButton
       id="signin"
-      type="submit"
       className="mt-5 w-2/3"
       variant="outline"
+      type="submit"
     >
       <Send />
       登陆
@@ -48,47 +46,36 @@ const LoginButton = () => {
 };
 const RegButton = () => {
   return (
-    <IconButton id="signup" type="submit" className="mt-5 w-2/3">
+    <IconButton id="signup" className="mt-5 w-2/3" type="submit">
       <SendHorizontal />
       注册
     </IconButton>
   );
 };
 
+interface FormInput {
+  email: string;
+  password: string;
+}
+
 export function EmailForm() {
   const [userPassword, setUserPassword] = useState<boolean>(false);
-  const [signinErr, setSigninErr] = useState<boolean>(false);
+  const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const [alertInfo, setAlertInfo] = useState<{
     title: string;
     message: string;
   }>({ title: "", message: "" });
   const router = useRouter();
 
-  const formSchema = z.object({
-    email: z
-      .string({ required_error: "请输入邮箱" })
-      .email({ message: "邮箱格式错误" }),
-    password: z
-      .string({ required_error: "请输入密码" })
-      .min(6, { message: "密码长度大于6" })
-      .max(12, { message: "密码长度小于12" })
-      .optional(),
-  });
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormInput>({
     defaultValues: {
       email: "",
+      password: undefined,
     },
     mode: "onSubmit",
   });
 
-  const onSubmitValid: SubmitHandler<z.infer<typeof formSchema>> = async (
-    data,
-    e
-  ) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-    //console.log(e?.nativeEvent.submitter.id);
+  const onSubmitValid: SubmitHandler<FormInput> = async (data, e) => {
     if ((e?.nativeEvent as SubmitEvent).submitter!.id == "signup") {
       try {
         let resp = await signIn(
@@ -101,21 +88,37 @@ export function EmailForm() {
             status: "signup",
           }
         );
-        if (resp?.error) {
-          setSigninErr(true);
+        setShowOverlay(true);
+        if (!resp) {
           setAlertInfo({
-            title: "邮箱登陆失败",
-            message: "已注册",
+            title: "服务器内部错误",
+            message: "请联系管理员或稍后重试",
           });
         } else {
-          setSigninErr(true);
-          setAlertInfo({
-            title: "链接已发送",
-            message: "请检查您的邮箱",
-          });
+          if (resp.error === null) {
+            setAlertInfo({
+              title: "链接已发送",
+              message: "请检查您的邮箱",
+            });
+          } else {
+            if (resp.error == ErrMsg.USEREXISTS) {
+              setAlertInfo({
+                title: "邮箱注册失败",
+                message: "已注册",
+              });
+            } else {
+              setAlertInfo({
+                title: "未知错误",
+                message: "请联系管理员或稍后重试",
+              });
+            }
+          }
         }
       } catch (e) {
-        setSigninErr(true);
+        setAlertInfo({
+          title: "未知错误",
+          message: "请联系管理员或稍后重试",
+        });
         console.log(e);
       }
     } else {
@@ -126,35 +129,49 @@ export function EmailForm() {
             password: data.password,
             redirect: false,
           });
-          console.log(resp);
-          if (resp?.error == "set") {
-            setSigninErr(true);
-            setAlertInfo({ title: "密码登陆失败", message: "请先设置密码" });
-          } else if (resp?.error == "found") {
-            setSigninErr(true);
+          if (!resp) {
+            setShowOverlay(true);
             setAlertInfo({
-              title: "密码登陆失败",
-              message: "用户不存在请先注册",
+              title: "服务器内部错误",
+              message: "请联系管理员或稍后重试",
             });
-          } else if (resp?.error == "wrong") {
-            setSigninErr(true);
-            setAlertInfo({
-              title: "密码登陆失败",
-              message: "密码错误",
-            });
-          } else if (resp?.ok) {
-            router.push("/home/dashboard");
           } else {
-            throw new Error("unrecognized");
+            if (resp.ok) {
+              router.push("/home/dashboard");
+            }
+
+            if (resp.error == ErrMsg.PASSWORDNOTSET) {
+              setShowOverlay(true);
+              setAlertInfo({ title: "密码登陆失败", message: "请先设置密码" });
+            } else if (resp.error == ErrMsg.USERNOTFOUND) {
+              setShowOverlay(true);
+              setAlertInfo({
+                title: "密码登陆失败",
+                message: "用户不存在请先注册",
+              });
+            } else if (resp.error == ErrMsg.WRONGPASSWORD) {
+              setShowOverlay(true);
+              setAlertInfo({
+                title: "密码登陆失败",
+                message: "密码错误",
+              });
+            } else {
+              setShowOverlay(true);
+              setAlertInfo({
+                title: "未知错误",
+                message: "请联系管理员或稍后重试",
+              });
+            }
           }
         } catch (e) {
-          setSigninErr(true);
+          setShowOverlay(true);
           setAlertInfo({
-            title: "密码登陆失败",
-            message: "",
+            title: "服务器内部错误",
+            message: "请联系管理员或稍后重试",
           });
         }
       } else {
+        //signin using email
         try {
           let resp = await signIn(
             "email",
@@ -167,34 +184,44 @@ export function EmailForm() {
             }
           );
           console.log(resp);
-          if (resp?.error) {
-            setSigninErr(true);
+          if (!resp) {
+            setShowOverlay(true);
             setAlertInfo({
-              title: "邮箱登陆失败",
-              message: "尚未注册",
+              title: "服务器内部错误",
+              message: "请联系管理员或稍后重试",
             });
           } else {
-            setSigninErr(true);
-            setAlertInfo({
-              title: "链接已发送",
-              message: "请检查您的邮箱",
-            });
+            if (resp.error == null) {
+              setShowOverlay(true);
+              setAlertInfo({
+                title: "链接已发送",
+                message: "请检查您的邮箱",
+              });
+            } else if (resp.error == ErrMsg.USERNOTFOUND) {
+              setShowOverlay(true);
+              setAlertInfo({
+                title: "邮箱登陆失败",
+                message: "尚未注册",
+              });
+            } else {
+              setShowOverlay(true);
+              setAlertInfo({
+                title: "未知错误",
+                message: "请联系管理员或稍后重试",
+              });
+            }
           }
         } catch (e) {
-          setSigninErr(true);
+          setShowOverlay(true);
         }
       }
     }
   };
-  const onSubmitInValid: SubmitErrorHandler<
-    z.infer<typeof formSchema>
-  > = async (data, e) => {
-    e?.preventDefault();
-  };
+  const onSubmitInValid: SubmitErrorHandler<FormInput> = async (data, e) => {};
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmitValid, onSubmitInValid)}>
+        <form onSubmit={form.handleSubmit(onSubmitValid)}>
           <FormField
             control={form.control}
             name="email"
@@ -203,7 +230,13 @@ export function EmailForm() {
                 <FormLabel>邮箱</FormLabel>
                 <FormControl>
                   <Input
-                    {...field}
+                    {...form.register("email", {
+                      required: "请输入邮箱",
+                      validate: (val) => {
+                        const result = z.string().email().safeParse(val);
+                        return result.success || "邮箱格式不正确";
+                      },
+                    })}
                     placeholder={userPassword ? "" : "发送链接到邮箱"}
                   />
                 </FormControl>
@@ -211,21 +244,26 @@ export function EmailForm() {
               </FormItem>
             )}
           />
-          {userPassword && (
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem className="">
-                  <FormLabel>密码</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className={userPassword ? "" : "hidden"}>
+                <FormLabel>密码</FormLabel>
+                <FormControl>
+                  <Input
+                    {...form.register("password", {
+                      required: { value: userPassword, message: "请输入密码" },
+                      minLength: { value: 6, message: "密码长度大于等于6" },
+                      maxLength: { value: 12, message: "密码长度小于等于12" },
+                    })}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div className="flex justify-end">
             <Button
               variant="link"
@@ -250,7 +288,11 @@ export function EmailForm() {
           )}
         </form>
       </Form>
-      <AlertOverlay open={signinErr} setOpen={setSigninErr} {...alertInfo} />
+      <AlertOverlay
+        open={showOverlay}
+        setOpen={setShowOverlay}
+        {...alertInfo}
+      />
     </div>
   );
 }
