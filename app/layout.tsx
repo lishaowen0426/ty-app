@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import RootHead from "@/components/RootHead";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html className="h-screen" lang="en">
       <RootHead />
-      <body className={cn("h-full m-0", inter.className)}>{children}</body>
+      <TooltipProvider>
+        <body className={cn("h-full m-0", inter.className)}>{children}</body>
+      </TooltipProvider>
     </html>
   );
 }
