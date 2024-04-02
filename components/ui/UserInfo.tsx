@@ -20,7 +20,8 @@ import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import DropdownMenuWithDialog, {
+import {
+  DropdownMenuWithDialog,
   DialogItem,
 } from "@/components/ui/DropdownDialog";
 import Profile from "@/components/ui/ProfileCard";

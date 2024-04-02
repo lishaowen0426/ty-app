@@ -1,5 +1,5 @@
 "use client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { UserButton } from "./UserInfo";
 import {
@@ -9,16 +9,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import { Pagination } from "@nextui-org/pagination";
 
 import { z } from "zod";
+import { useForm, useFieldArray } from "react-hook-form";
 
 import { useState, useRef, useEffect } from "react";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import classes from "@/components/style/TopicCard.module.css";
 import { useRouter } from "next/navigation";
 import {
@@ -33,6 +38,8 @@ import type { Topic as TopicProp } from "@prisma/client";
 import { VirtualItem } from "@tanstack/virtual-core";
 import styled from "styled-components";
 import { cn } from "@/lib/utils";
+import { Search } from "lucide-react";
+import { da } from "date-fns/locale";
 
 const TOPIC_PER_PAGE = 12;
 const DOUBLE_WIDTH = "w-[800px]";
@@ -136,9 +143,9 @@ const fetchTopic = async (
 ): Promise<TopicResponse> => {
   let endpoint = "";
   if ("from" in ctx) {
-    endpoint = `/api/chat?from=${ctx.from}&&to=${ctx.to}`;
+    endpoint = `/api/topic?from=${ctx.from}&&to=${ctx.to}`;
   } else {
-    endpoint = `/api/chat?from=${ctx.pageParam.from}&&to=${ctx.pageParam.to}`;
+    endpoint = `/api/topic?from=${ctx.pageParam.from}&&to=${ctx.pageParam.to}`;
   }
 
   return fetch(endpoint, {
@@ -347,25 +354,20 @@ const TopicPage = ({
   };
 
   return (
-    <div
-      className={cn(
-        className,
-        "relative container mx-auto flex flex-col gap-4"
-      )}
-    >
+    <>
       <Card
         className={cn(
-          `relative  flex flex-wrap justify-start items-start gap-x-0`,
+          "relative  flex flex-wrap justify-start items-start gap-x-0 w-full",
           status == "pending" || isPlaceholderData ? "opacity-30" : "",
           className,
-          `left-1/2 -translate-x-1/2 h-[700px]`
+          `h-[700px]`
         )}
       >
         {isSuccess && displayTopic(data)}
         {isError && <div>error</div>}
       </Card>
 
-      <div className={cn("flex flex-row justify-between")}>
+      <div className={cn("flex flex-row justify-between mt-2")}>
         <Pagination
           showControls
           total={totalPage}
@@ -375,16 +377,62 @@ const TopicPage = ({
         />
         <UserButton className={cn(className)} />
       </div>
-    </div>
+    </>
+  );
+};
+
+const TopicFilter = ({
+  className,
+  topicCategory,
+}: {
+  className?: string;
+  topicCategory: string[];
+}) => {
+  type FilterValues = {
+    category: { category: string }[];
+    until: Date;
+    distance: number;
+  };
+  const { control, handleSubmit } = useForm<FilterValues>({
+    defaultValues: {
+      category: [],
+    },
+  });
+  const { fields } = useFieldArray({
+    name: "category",
+    control: control,
+  });
+
+  const filterSubmit = (data: FilterValues) => {
+    console.log(data);
+  };
+  return (
+    <Collapsible>
+      <CollapsibleTrigger asChild>
+        <Button variant="outline" className={cn(className, "mb-2 text-sm")}>
+          <Search className="mr-2" size="20px" />
+          过滤话题
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <Card className={cn(className, "h-[150px] mb-2")}>
+          <CardContent>
+            <form onSubmit={handleSubmit(filterSubmit)}></form>
+          </CardContent>
+        </Card>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
 const TopicContainer = ({
   className,
   topicCount,
+  topicCategory,
 }: {
   className?: string;
   topicCount: number;
+  topicCategory: string[];
 }) => {
   const isSmallDevice = useMediaQuery("only screen and (max-width : 800px)");
   const isMediumDevice = useMediaQuery(
@@ -395,17 +443,17 @@ const TopicContainer = ({
     return <TopicScroll className={className} topicCount={topicCount} />;
   } else if (isMediumDevice) {
     return (
-      <TopicPage
-        topicCount={topicCount}
-        className={cn(className, DOUBLE_WIDTH)}
-      />
+      <div className={cn(DOUBLE_WIDTH, "flex flex-col container")}>
+        <TopicFilter topicCategory={topicCategory} />
+        <TopicPage topicCount={topicCount} className={cn(className)} />
+      </div>
     );
   } else {
     return (
-      <TopicPage
-        topicCount={topicCount}
-        className={cn(className, TRIPLE_WIDTH)}
-      />
+      <div className={cn(TRIPLE_WIDTH, "flex flex-col container")}>
+        <TopicFilter topicCategory={topicCategory} />
+        <TopicPage topicCount={topicCount} className={cn(className)} />
+      </div>
     );
   }
 };
@@ -413,9 +461,17 @@ const TopicContainer = ({
 export default function TopicCard({
   className,
   topicCount,
+  topicCategory,
 }: {
   className?: string;
   topicCount: number;
+  topicCategory: string[];
 }) {
-  return <TopicContainer className={className} topicCount={topicCount} />;
+  return (
+    <TopicContainer
+      className={className}
+      topicCount={topicCount}
+      topicCategory={topicCategory}
+    />
+  );
 }

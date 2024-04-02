@@ -24,7 +24,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn, signOut } from "next-auth/react";
 import { SubmitHandler, SubmitErrorHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import AuthCard, { AuthCardProps } from "@/components/ui/AuthCard";
 import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
 import { IconButton } from "@/components/ui/AuthButton";
@@ -299,13 +298,13 @@ export function EmailForm() {
 
 export default function EmailCard() {
   return (
-    <AuthCard className="h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2">
+    <Card className="overflow-y-auto h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2">
       <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
         <CardTitle>登陆</CardTitle>
       </CardHeader>
       <CardContent>
         <EmailForm />
       </CardContent>
-    </AuthCard>
+    </Card>
   );
 }

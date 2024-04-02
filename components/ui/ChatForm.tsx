@@ -26,7 +26,7 @@ import { IconButton } from "@/components/ui/AuthButton";
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import { Session } from "inspector";
-import type { ChatCreateReq } from "@/app/api/chat/route";
+import type { ChatCreateReq } from "@/app/api/topic/route";
 
 const SERVER =
   process.env.NEXT_PUBLIC_SERVER ??

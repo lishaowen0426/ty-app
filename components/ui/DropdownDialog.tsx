@@ -70,7 +70,7 @@ export interface DropdownMenuWithDialogProp {
   children?: React.ReactNode;
 }
 
-export default function DropdownMenuWithDialog({
+export function DropdownMenuWithDialog({
   trigger,
   children,
 }: DropdownMenuWithDialogProp) {

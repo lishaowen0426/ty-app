@@ -66,12 +66,15 @@ export async function GET(req: NextRequest) {
   let from = params.get("from");
   let to = params.get("to");
 
+  let category = params.get("category");
+
   if (from && to) {
     const topics =
       await prisma.$queryRaw`SELECT * FROM "TopicByCreationDate" WHERE index >= ${parseInt(
         from
       )} AND index < ${parseInt(to)}`;
     return NextResponse.json({ topics: topics }, { status: 200 });
+  } else if (category) {
   } else {
     return NextResponse.json(null, { status: 400 });
   }

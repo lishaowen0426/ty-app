@@ -15,5 +15,5 @@ import { Settings, Home } from "lucide-react";
 import React from "react";
 
 export default function Dashboard() {
-  return <div>hello</div>;
+  return <div>我的</div>;
 }
