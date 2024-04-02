@@ -9,3 +9,13 @@
   z-index: 100;
   display: block;
 }
+
+.scroller {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+.scroller::-webkit-scrollbar {
+  /* WebKit */
+  width: 0;
+  height: 0;
+}

@@ -66,7 +66,7 @@ interface UserAvatarProps {
 const UserAvatar = forwardRef<HTMLImageElement, UserAvatarProps>(
   ({ user, children, url }, ref) => {
     if (!user) {
-      return <>{children}</>;
+      return children;
     }
 
     if (url) {

@@ -38,3 +38,4 @@ next-env.d.ts
 #python venv
 /scripts/*
 !/scripts/generateTopics.py
+!/scripts/db.ts

@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import classes from "@/components/style/TopicCard.module.css";
+import { useRouter } from "next/navigation";
 import {
   useInfiniteQuery,
   QueryFunctionContext,
@@ -36,7 +37,6 @@ import { cn } from "@/lib/utils";
 const TOPIC_PER_PAGE = 12;
 const DOUBLE_WIDTH = "w-[800px]";
 const TRIPLE_WIDTH = "w-[1200px]";
-const TOPIC_PAGE_HEIGHT = "800"; // in pixel
 
 export interface UserAvatarInfo {
   id: string;
@@ -253,10 +253,11 @@ const TopicScroll = ({
 
   return (
     <Card
-      className={cn(
-        "relative left-1/2 -translate-x-1/2 w-[350px] h-[700px] overflow-auto",
-        className
-      )}
+      className={
+        classes.scroller +
+        " " +
+        cn("relative container mx-auto h-[700px] overflow-auto", className)
+      }
       ref={parent}
     >
       <div
@@ -349,7 +350,7 @@ const TopicPage = ({
     <div
       className={cn(
         className,
-        "relative left-1/2 -translate-x-1/2 flex flex-col gap-4"
+        "relative container mx-auto flex flex-col gap-4"
       )}
     >
       <Card
