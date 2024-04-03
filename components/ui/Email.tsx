@@ -20,15 +20,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn, signOut } from "next-auth/react";
 import { SubmitHandler, SubmitErrorHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
 import { AlertOverlay } from "./DiaglogOverlay";
 import { IconButton } from "@/components/ui/AuthButton";
 import { Send, SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const LoginButton = () => {
   return (
@@ -226,7 +225,6 @@ export function EmailForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>邮箱</FormLabel>
                 <FormControl>
                   <Input
                     {...form.register("email", {
@@ -236,7 +234,7 @@ export function EmailForm() {
                         return result.success || "邮箱格式不正确";
                       },
                     })}
-                    placeholder={userPassword ? "" : "发送链接到邮箱"}
+                    placeholder="邮箱"
                   />
                 </FormControl>
                 <FormMessage />
@@ -248,8 +246,9 @@ export function EmailForm() {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem className={userPassword ? "" : "hidden"}>
-                <FormLabel>密码</FormLabel>
+              <FormItem
+                className={cn(userPassword ? "" : "hidden", "mt-[10px]")}
+              >
                 <FormControl>
                   <Input
                     {...form.register("password", {
@@ -257,6 +256,7 @@ export function EmailForm() {
                       minLength: { value: 6, message: "密码长度大于等于6" },
                       maxLength: { value: 12, message: "密码长度小于等于12" },
                     })}
+                    placeholder="密码"
                   />
                 </FormControl>
                 <FormMessage />
@@ -264,6 +264,16 @@ export function EmailForm() {
             )}
           />
           <div className="flex justify-end">
+            <Button
+              variant="link"
+              className="underline"
+              onClick={(e) => {
+                e.preventDefault();
+                form.clearErrors();
+              }}
+            >
+              忘记密码?
+            </Button>
             <Button
               variant="link"
               className="underline"
@@ -296,9 +306,14 @@ export function EmailForm() {
   );
 }
 
-export default function EmailCard() {
+export default function EmailCard({ className }: { className?: string }) {
   return (
-    <Card className="overflow-y-auto h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2">
+    <Card
+      className={cn(
+        "overflow-y-auto h-[300px] w-[20rem] relative left-1/2 -translate-x-1/2",
+        className
+      )}
+    >
       <CardHeader className="border-solid border-zinc-300 border-b-2 mb-4 ml-3 mr-3 pb-4">
         <CardTitle>登陆</CardTitle>
       </CardHeader>

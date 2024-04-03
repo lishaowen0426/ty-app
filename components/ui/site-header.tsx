@@ -41,7 +41,7 @@ import { Settings, Mail } from "lucide-react";
 import { Label } from "./label";
 import { pinyin } from "pinyin-pro";
 
-function ModeToggle() {
+export function ModeToggle({ className }: { className?: string }) {
   const { setTheme, theme } = useTheme();
   const [darkChecked, setDarkChecked] = useState(theme == "dark");
   const [mounted, setMounted] = useState(false);
@@ -55,7 +55,7 @@ function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild className={className}>
         <Button variant="ghost" className="px-0">
           <Settings className="h-[1.5rem] w-[1.5rem] scale-100" />
         </Button>
