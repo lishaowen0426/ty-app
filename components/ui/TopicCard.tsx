@@ -260,6 +260,7 @@ const TopicScroll = ({
 
   return (
     <Card
+      id="scroll-topic-container"
       className={
         classes.scroller +
         " " +
@@ -443,14 +444,20 @@ const TopicContainer = ({
     return <TopicScroll className={className} topicCount={topicCount} />;
   } else if (isMediumDevice) {
     return (
-      <div className={cn(DOUBLE_WIDTH, "flex flex-col container")}>
+      <div
+        id="page-topic-container"
+        className={cn(DOUBLE_WIDTH, "flex flex-col container")}
+      >
         <TopicFilter topicCategory={topicCategory} />
         <TopicPage topicCount={topicCount} className={cn(className)} />
       </div>
     );
   } else {
     return (
-      <div className={cn(TRIPLE_WIDTH, "flex flex-col container")}>
+      <div
+        id="page-topic-container"
+        className={cn(TRIPLE_WIDTH, "flex flex-col container")}
+      >
         <TopicFilter topicCategory={topicCategory} />
         <TopicPage topicCount={topicCount} className={cn(className)} />
       </div>

@@ -151,7 +151,7 @@ function SearchButton() {
   );
 }
 
-function HeaderNav() {
+function HeaderNav({ user, search }: { user?: boolean; search?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -162,8 +162,8 @@ function HeaderNav() {
       </Link>
       <nav></nav>
       <div className="flex  items-center justify-between space-x-2 md:justify-end">
-        <SearchButton />
-        <UserInfo />
+        {search && <SearchButton />}
+        {user && <UserInfo />}
         <ModeToggle />
       </div>
     </div>
@@ -171,10 +171,14 @@ function HeaderNav() {
 }
 
 export function SiteHeader() {
+  const { status } = useSession();
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 ">
       <div className="container px-0 flex h-14 items-center">
-        <HeaderNav />
+        <HeaderNav
+          user={status === "authenticated"}
+          search={status === "authenticated"}
+        />
       </div>
     </header>
   );

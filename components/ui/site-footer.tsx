@@ -13,7 +13,7 @@ const FooterLinks: {
 
 export default function SiteFooter() {
   return (
-    <footer className="sticky top-[100vh] left-0 z-50 w-full bg-foreground text-background/70   min-h-[180px] flex flex-col sm:flex-row mt-[50px]">
+    <footer className="w-full bg-foreground text-background/70   min-h-[180px] flex flex-col sm:flex-row">
       <div
         id="footer-logo"
         className="flex items-center  space-x-[10px] w-full sm:w-[180px] mt-[30px] sm:mt-0"
@@ -34,7 +34,11 @@ export default function SiteFooter() {
               <h3 className="font-semibold text-sm">{item.category}</h3>
               {item.links.map((link, index) => {
                 return (
-                  <Link href={link.dest} className="text-xs opacity-80">
+                  <Link
+                    key={index}
+                    href={link.dest}
+                    className="text-xs opacity-80"
+                  >
                     {link.name}
                   </Link>
                 );

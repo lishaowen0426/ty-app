@@ -56,7 +56,7 @@ interface FormInput {
   password: string;
 }
 
-export function EmailForm() {
+export function EmailForm({ callbackUrl }: { callbackUrl?: string }) {
   const [userPassword, setUserPassword] = useState<boolean>(false);
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const [alertInfo, setAlertInfo] = useState<{
@@ -80,12 +80,16 @@ export function EmailForm() {
           "email",
           {
             email: data.email,
-            redirect: false,
+            redirect: !!callbackUrl,
+            callbackUrl: callbackUrl,
           },
           {
             status: "signup",
           }
         );
+        if (callbackUrl) {
+          return;
+        }
         setShowOverlay(true);
         if (!resp) {
           setAlertInfo({
@@ -125,8 +129,14 @@ export function EmailForm() {
           let resp = await signIn("credentials", {
             email: data.email,
             password: data.password,
-            redirect: false,
+            redirect: !!callbackUrl,
+            callbackUrl: callbackUrl,
           });
+
+          if (callbackUrl) {
+            return;
+          }
+
           if (!resp) {
             setShowOverlay(true);
             setAlertInfo({
@@ -137,24 +147,21 @@ export function EmailForm() {
             if (resp.ok) {
               router.push("/home/dashboard");
             }
+            setShowOverlay(true);
 
             if (resp.error == ErrMsg.PASSWORDNOTSET) {
-              setShowOverlay(true);
               setAlertInfo({ title: "密码登陆失败", message: "请先设置密码" });
             } else if (resp.error == ErrMsg.USERNOTFOUND) {
-              setShowOverlay(true);
               setAlertInfo({
                 title: "密码登陆失败",
                 message: "用户不存在请先注册",
               });
             } else if (resp.error == ErrMsg.WRONGPASSWORD) {
-              setShowOverlay(true);
               setAlertInfo({
                 title: "密码登陆失败",
                 message: "密码错误",
               });
             } else {
-              setShowOverlay(true);
               setAlertInfo({
                 title: "未知错误",
                 message: "请联系管理员或稍后重试",
@@ -162,7 +169,6 @@ export function EmailForm() {
             }
           }
         } catch (e) {
-          setShowOverlay(true);
           setAlertInfo({
             title: "服务器内部错误",
             message: "请联系管理员或稍后重试",
@@ -175,13 +181,16 @@ export function EmailForm() {
             "email",
             {
               email: data.email,
-              redirect: false,
+              redirect: !!callbackUrl,
+              callbackUrl: callbackUrl,
             },
             {
               status: "signin",
             }
           );
-          console.log(resp);
+          if (callbackUrl) {
+            return;
+          }
           if (!resp) {
             setShowOverlay(true);
             setAlertInfo({
