@@ -72,7 +72,10 @@ export const ContentCard = ({
   } else {
     return (
       <div
-        className={`relative flex ${classes.topic} ${className} `}
+        className={cn(
+          `flex ${classes.topic} ${className}`,
+          "bg-white rounded-xl shadow-secondary outline-4 outline-secondary outline"
+        )}
         key={content.id}
         style={style}
         onClick={(ev: React.MouseEvent<HTMLDivElement>) => {
@@ -92,7 +95,12 @@ export const ContentCard = ({
             {content.description}
           </span>
         </div>
-        <div className={`w-full h-full grow-0 ${classes.overlay}`}></div>
+        <div
+          className={cn(
+            `w-full h-full grow-0 ${classes.overlay}`,
+            "rounded-xl"
+          )}
+        ></div>
       </div>
     );
   }
@@ -166,7 +174,6 @@ const VirtualItem = styled(ContentCard)<{ $item: VirtualItem }>`
   width: 100%;
   height: ${(props) => props.$item.size}px;
   transform: translateY(${(props) => props.$item.start}px);
-  padding: 10px;
 `;
 
 const TopicScroll = ({
@@ -259,12 +266,12 @@ const TopicScroll = ({
   }
 
   return (
-    <Card
+    <div
       id="scroll-topic-container"
       className={
         classes.scroller +
         " " +
-        cn("relative container mx-auto h-[700px] overflow-auto", className)
+        cn("flex-1  mx-[1rem] max-h-[80vh] overflow-auto", className)
       }
       ref={parent}
     >
@@ -274,6 +281,7 @@ const TopicScroll = ({
           width: "100%",
           position: "relative",
         }}
+        className="bg-secondary"
       >
         {topicVirtualizer.getVirtualItems().map((item) => {
           const isLoaderRow = item.index > allTopics.length - 1;
@@ -296,7 +304,7 @@ const TopicScroll = ({
           }
         })}
       </div>
-    </Card>
+    </div>
   );
 };
 

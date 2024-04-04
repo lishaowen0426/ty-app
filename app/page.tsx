@@ -4,7 +4,6 @@ import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { SiteHeader } from "@/components/ui/site-header";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -24,14 +23,12 @@ export default function Home() {
   } else if (status === "authenticated") {
     return (
       <div className="text-center">
-        <SiteHeader />
         <TopicsAroundMe className="mt-[250px]" />
       </div>
     );
   } else {
     return (
       <>
-        <SiteHeader />
         <div className="mt-[80px] w-fit  mx-[auto] flex flex-col  items-center sm:flex-row sm:justify-start sm:mt-[200px]">
           <TopicsAroundMe className="hidden sm:block w-fit" />
           <div className="hidden sm:block w-[20%] max-w-[450px] min-w-[200px]"></div>
