@@ -13,7 +13,6 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { TopicProps } from "@/components/ui/TopicCard";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,

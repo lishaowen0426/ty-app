@@ -23,39 +23,16 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
-          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
+        background: "rgb(var(--background)/<alpha-value>)",
+        "home-heading": "rgb(var(--home-heading)/<alpha-value>)",
+        "home-button": "rgb(var(--home-button)/<alpha-value>)",
+        "home-button-border": "rgb(var(--home-button-border)/<alpha-value>)",
+        "home-button-text": "rgb(var(--home-button-text)/<alpha-value>)",
+        "home-form-text": "rgb(var(--home-form-text)/<alpha-value>)",
+        "home-form-title": "rgb(var(--home-form-title)/<alpha-value>)",
+        "home-form-field-background":
+          "rgb(var(--home-form-field-background)/<alpha-value>)",
+        "text-link": "rgb(var(--text-link)/<alpha-value>)",
       },
       borderRadius: {
         xl: `calc(var(--radius) + 4px)`,
@@ -79,6 +56,13 @@ module.exports = {
       },
       gridTemplateRows: {
         10: "repeat(10, minmax(0, 1fr))",
+      },
+      boxShadow: {
+        "home-button-shadow": "4px 4px 10px 0px var(--home-button-shadow)",
+        "home-button-inner-shadow": "inset 0 0 10px #00000040",
+        "home-form-shadow": "0px 0px 10px 6px var(--home-form-shadow)",
+        "home-form-field-shadow":
+          "inset 0 0 10px  var(--home-form-field-shadow)",
       },
     },
   },

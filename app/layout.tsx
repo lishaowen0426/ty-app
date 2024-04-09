@@ -14,13 +14,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html className="h-full" lang="en" suppressHydrationWarning>
       <head />
-      <body className="bg-secondary min-h-screen m-0 flex flex-col justify-between">
+      <body className="bg-background min-h-screen m-0 flex flex-col justify-start">
         <Providers>
-          <TooltipProvider>
-            <SiteHeader />
-            <main className="flex-1 flex flex-col">{children}</main>
-            <SiteFooter />
-          </TooltipProvider>
+          <TooltipProvider>{children}</TooltipProvider>
         </Providers>
       </body>
     </html>

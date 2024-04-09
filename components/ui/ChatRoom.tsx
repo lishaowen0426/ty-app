@@ -1,17 +1,7 @@
 import { cn, getRandomInt } from "@/lib/utils";
 import { LoremIpsum } from "lorem-ipsum";
+import { lorem } from "@/lib/utils";
 import { Input } from "./input";
-
-const lorem = new LoremIpsum({
-  sentencesPerParagraph: {
-    max: 8,
-    min: 4,
-  },
-  wordsPerSentence: {
-    max: 30,
-    min: 4,
-  },
-});
 
 function Bubble({
   message,

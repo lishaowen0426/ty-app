@@ -20,6 +20,9 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
         link: "text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50",
+        pink: "border-2 border-home-button-border bg-home-button text-home-button-text font-semibold rounded-lg shadow-home-button-shadow",
+        pinkInner:
+          "border-2 border-home-button-border bg-home-button text-home-button-text font-semibold rounded-lg shadow-home-button-inner-shadow",
       },
       size: {
         default: "h-10 px-4 py-2",

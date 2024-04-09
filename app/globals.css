@@ -4,48 +4,31 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --background: 255 233 200;
+    --home-heading: 94 46 46;
+    --home-button: 255 204 244;
+    --home-button-border: 255 105 222;
+    --home-button-text: 255 36 233;
+    --home-button-shadow: #ff5bdc58;
+    --home-form-shadow: #ffcf8880;
+    --home-form-text: 255 149 0;
+    --home-form-title: 93 46 46;
+    --home-form-field-background: 255 220 200;
+    --home-form-field-shadow: #00000010;
+    --text-link: 12 80 255;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --background: 0 0 0;
+    --home-heading: 255 255 255;
+    --home-button: 0 0 0;
+    --home-button-border: 0 0 0;
+    --home-button-text: 255 255 255;
+    --home-button-shadow: #ffffff25;
+    --home-form-shadow: #cacaca;
+    --home-form-title: 255 149 0;
+    --home-form-field-background: 37 37 37;
   }
 }
 
@@ -59,6 +42,10 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+html {
+  font-size: 16px;
+}
 #site-header {
   height: 40px;
 }
@@ -67,4 +54,8 @@
 }
 #scroll-topic-container {
   height: calc(100vh - 100px);
+}
+
+.form-field input::placeholder {
+  color: rgb(var(--home-form-text) / 30);
 }
