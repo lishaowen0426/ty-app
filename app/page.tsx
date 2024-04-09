@@ -28,21 +28,19 @@ export default function Home() {
     );
   } else {
     return (
-      <>
-        <div className="mt-[80px] w-fit  mx-[auto] flex flex-col  items-center sm:flex-row sm:justify-start sm:mt-[200px]">
-          <TopicsAroundMe className="hidden sm:block w-fit" />
-          <div className="hidden sm:block w-[20%] max-w-[450px] min-w-[200px]"></div>
-          <div className="w-[350px] max-w-[90%] min-w-[200px] dark:bg-background">
-            <Card className="w-full">
-              <CardContent className="mt-[30px]">
-                <EmailForm callbackUrl="/topics" />
-              </CardContent>
-            </Card>
-            <Separator className="sm:hidden bg-black/30 mt-[30px] w-full" />
-          </div>
-          <TopicsAroundMe className="sm:hidden mt-[50px]" />
+      <div className="mt-[80px] w-fit  mx-[auto] flex-1 flex flex-col  items-center sm:flex-row sm:justify-start sm:mt-[200px]">
+        <TopicsAroundMe className="hidden sm:block w-fit" />
+        <div className="hidden sm:block w-[20%] max-w-[450px] min-w-[200px]"></div>
+        <div className="w-[350px] max-w-[90%] min-w-[200px] dark:bg-background">
+          <Card className="w-full">
+            <CardContent className="mt-[30px]">
+              <EmailForm callbackUrl="/topics" />
+            </CardContent>
+          </Card>
+          <Separator className="sm:hidden bg-black/30 mt-[30px] w-full" />
         </div>
-      </>
+        <TopicsAroundMe className="sm:hidden mt-[50px]" />
+      </div>
     );
   }
 }

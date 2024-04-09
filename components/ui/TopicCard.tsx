@@ -16,16 +16,14 @@ import {
 } from "@/components/ui/collapsible";
 
 import { Pagination } from "@nextui-org/pagination";
+import { useRouter } from "next/navigation";
 
-import { z } from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
 
 import { useState, useRef, useEffect } from "react";
-import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import classes from "@/components/style/TopicCard.module.css";
-import { useRouter } from "next/navigation";
 import {
   useInfiniteQuery,
   QueryFunctionContext,
@@ -39,7 +37,6 @@ import { VirtualItem } from "@tanstack/virtual-core";
 import styled from "styled-components";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
-import { da } from "date-fns/locale";
 
 const TOPIC_PER_PAGE = 12;
 const DOUBLE_WIDTH = "w-[800px]";
@@ -57,11 +54,13 @@ export interface TopicWithAvatar extends TopicProp {
 export const ContentCard = ({
   content,
   className,
+  router,
   style,
 }: {
   content: TopicWithAvatar | string;
   className?: string;
   style?: React.CSSProperties;
+  router: ReturnType<typeof useRouter>;
 }) => {
   if (typeof content == "string") {
     return (
@@ -81,6 +80,7 @@ export const ContentCard = ({
         onClick={(ev: React.MouseEvent<HTMLDivElement>) => {
           ev.preventDefault();
           console.log(content);
+          router.push(`/topics/${content.id}`);
         }}
       >
         {content.avatar && (
@@ -104,35 +104,6 @@ export const ContentCard = ({
       </div>
     );
   }
-};
-
-const TopicHeader = () => {
-  const SelectDistance = ({ className }: { className?: string }) => {
-    return (
-      <Select>
-        <SelectTrigger className={className}>
-          <SelectValue placeholder="距离我" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="500">500米</SelectItem>
-          <SelectItem value="1000">1000米</SelectItem>
-          <SelectItem value="5000">5000米</SelectItem>
-          <SelectItem value="0">任意</SelectItem>
-        </SelectContent>
-      </Select>
-    );
-  };
-  return (
-    <div className="w-full flex justify-between mb-1 mt-1 max-h-12">
-      <div className="flex space-x-2  ">
-        <Input type="text" placeholder="话题" className="w-[6rem] h-[80%]" />
-        <Button variant="outline" className=" h-[80%]">
-          <Search size="16" />
-        </Button>
-      </div>
-      <SelectDistance className="w-[7rem] max-h-12" />
-    </div>
-  );
 };
 
 export interface TopicCursor {
@@ -184,6 +155,7 @@ const TopicScroll = ({
   topicCount: number;
 }) => {
   const parent = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const {
     status,
     data,
@@ -252,27 +224,22 @@ const TopicScroll = ({
     text?: string;
   }) => {
     if (text) {
-      return <VirtualItem content={text} $item={item} />;
+      return <VirtualItem content={text} $item={item} router={router} />;
     }
 
     if (topic) {
-      return <VirtualItem content={topic} $item={item} />;
+      return <VirtualItem content={topic} $item={item} router={router} />;
     }
   };
 
   if (isError) {
-    console.log("hrtr");
     return <div>Fetch topic error...</div>;
   }
 
   return (
     <div
       id="scroll-topic-container"
-      className={
-        classes.scroller +
-        " " +
-        cn("flex-1  mx-[1rem] max-h-[80vh] overflow-auto", className)
-      }
+      className={classes.scroller + " " + cn("overflow-auto", className)}
       ref={parent}
     >
       <div
@@ -322,6 +289,7 @@ const TopicPage = ({
   topicCount: number;
   className?: string;
 }) => {
+  const router = useRouter();
   const totalPage = Math.ceil(topicCount / TOPIC_PER_PAGE);
 
   const [currentPage, setPage] = useState(1);
@@ -355,6 +323,7 @@ const TopicPage = ({
         <PageContentCard
           key={t.id}
           content={t}
+          router={router}
           $width={className?.includes(DOUBLE_WIDTH) ? "50%" : "33.3333333%"}
           $height={className?.includes(DOUBLE_WIDTH) ? "16.66667%" : "25%"}
         />

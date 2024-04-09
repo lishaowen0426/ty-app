@@ -48,3 +48,23 @@
     --ring: 240 4.9% 83.9%;
   }
 }
+
+/* For Webkit-based browsers (Chrome, Safari and Opera) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* For IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+#site-header {
+  height: 40px;
+}
+#bottom-navi {
+  height: 60px;
+}
+#scroll-topic-container {
+  height: calc(100vh - 100px);
+}

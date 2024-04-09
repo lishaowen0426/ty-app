@@ -152,8 +152,6 @@ function SearchButton() {
 }
 
 function HeaderNav({ user, search }: { user?: boolean; search?: boolean }) {
-  const pathname = usePathname();
-
   return (
     <div className="flex container px-0 justify-between">
       <Link href="/" className="flex items-center space-x-2">
@@ -173,8 +171,11 @@ function HeaderNav({ user, search }: { user?: boolean; search?: boolean }) {
 export default function SiteHeader() {
   const { status } = useSession();
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 ">
-      <div className="container px-0 flex h-14 max-h-[10vh] items-center">
+    <header
+      id="site-header"
+      className=" z-50 w-full border-b border-border/40 bg-background/95"
+    >
+      <div className="container px-0 flex   items-center">
         <HeaderNav
           user={status === "authenticated"}
           search={status === "authenticated"}
