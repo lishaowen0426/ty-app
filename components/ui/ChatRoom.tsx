@@ -105,7 +105,7 @@ export function ChatRoom(props: ChatProps) {
   return (
     <div
       id="chat-scroll"
-      className="h-full overflow-y-auto bg-chat-background "
+      className="h-full overflow-y-auto bg-chat-background px-[10px]"
     >
       {messages.map((m, index) => {
         return (
