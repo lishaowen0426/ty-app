@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { lorem } from "@/lib/utils";
 import Link from "next/link";
-import avatar from "@/asset/home-avatar.png";
+import avatar from "@/public/home-avatar.png";
 
 export default function Home() {
   return (

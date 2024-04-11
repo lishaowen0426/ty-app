@@ -33,6 +33,12 @@ module.exports = {
         "home-form-field-background":
           "rgb(var(--home-form-field-background)/<alpha-value>)",
         "text-link": "rgb(var(--text-link)/<alpha-value>)",
+        "header-icon": "rgb(var(--header-icon)/<alpha-value>)",
+        "header-title": "rgb(var(--header-title)/<alpha-value>)",
+        "topic-card": "rgb(var(--topic-card)/<alpha-value>)",
+        "avatar-count": "rgb(var(--avatar-count)/<alpha-value>)",
+        "light-text": "rgb(var(--light-text)/<alpha-value>)",
+        "chat-background": "rgb(var(--chat-background)/<alpha-value>)",
       },
       borderRadius: {
         xl: `calc(var(--radius) + 4px)`,

@@ -26,3 +26,11 @@ export const lorem = new LoremIpsum({
 });
 
 export type StateDispatch<T> = Dispatch<SetStateAction<T>>;
+
+export const fromMeterToBest = (meter: number) => {
+  if (meter < 1000) {
+    return `${meter}m`;
+  } else {
+    return `${(meter / 1000).toFixed(1)}km`;
+  }
+};

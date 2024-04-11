@@ -1,7 +1,11 @@
+"use client";
 import { cn, getRandomInt } from "@/lib/utils";
-import { LoremIpsum } from "lorem-ipsum";
 import { lorem } from "@/lib/utils";
 import { Input } from "./input";
+import { useEffect } from "react";
+import { IconButton } from "./button";
+import { ArrowLeft, Smile } from "lucide-react";
+import { Icons } from "./icons";
 
 function Bubble({
   message,
@@ -20,8 +24,10 @@ function Bubble({
       className={cn(
         className,
         self ? "ml-auto mr-0" : "",
-        "w-max max-w-[75%] bg-background py-2 px-3 rounded-xl"
+        self ? "chat-bubble-self" : "chat-bubble-they",
+        "w-max max-w-[75%] py-2 px-3 rounded-xl my-[10px]"
       )}
+      suppressHydrationWarning
     >
       {message}
     </div>
@@ -32,51 +38,80 @@ const messages = new Array(100).fill("").map(() => {
   return lorem.generateSentences(getRandomInt(1, 10));
 });
 
-export default function ChatRoom({
-  className,
-  id,
-}: {
-  className?: string;
+export type ChatProps = {
   id: string;
-}) {
+  name: string;
+  members: number;
+  online: number;
+} & React.ComponentPropsWithoutRef<"div">;
+
+export const ChatHeader = (props: ChatProps) => {
+  const { name, members, online, ...rest } = props;
+  const Info = () => {
+    return (
+      <div id="chat-header-info" className="flex flex-col justify-center">
+        <div className="truncate text-xl">{name}</div>
+        <div className="text-light-text/50 text-xs">{`${members}成员, ${online}在线`}</div>
+      </div>
+    );
+  };
+  return (
+    <div id="chat-header" className="flex justify-start container px-[1rem]">
+      <IconButton className="w-[24px]">
+        <ArrowLeft />
+      </IconButton>
+      <Info />
+      <IconButton className="ml-auto">
+        <Icons.EllipsisVertical />
+      </IconButton>
+    </div>
+  );
+};
+
+export const ChatFooter = (props: React.ComponentPropsWithoutRef<"div">) => {
   return (
     <div
-      className={cn(
-        className,
-        "flex flex-col justify-between container   max-h-[1000px] py-[10px]"
-      )}
+      id="chat-footer"
+      className="bg-chat-background px-[1rem] flex justify-between"
     >
-      <div className="h-[40px]">ll</div>
-      <div
-        className={cn(
-          "scrollbar-hide",
-          className,
-          "flex-1 flex flex-col gap-[10px]  overflow-auto"
-        )}
-      >
-        {messages.map((msg, index) => (
-          <Bubble message={msg} key={index} self={getRandomInt(0, 1) == 0} />
-        ))}
+      <input className="rounded-2xl h-[1.5lh] my-auto flex-1 min-w-[3ch] mr-[1ch]" />
+      <div className="flex flex-row w-[3.5lh] justify-between">
+        <IconButton>
+          <Smile size="1.5lh" strokeWidth="1.2" />
+        </IconButton>
+        <IconButton>
+          <Icons.CirclePlus width="1.5lh" height="1.5lh" strokeWidth="1.2" />
+        </IconButton>
       </div>
-      <div className="mt-[10px] h-[40px] flex justify-end items-center">
-        <Input className="flex-1" />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          className="lucide lucide-circle-plus ml-[10px]"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M8 12h8" />
-          <path d="M12 8v8" />
-        </svg>
-      </div>
+    </div>
+  );
+};
+
+export function ChatRoom(props: ChatProps) {
+  const { id: topic_id } = props;
+  useEffect(() => {
+    const chatHeight = () => {
+      document.documentElement.style.setProperty(
+        "--chat-scroll-height",
+        `${window.innerHeight}px`
+      );
+    };
+    chatHeight();
+    window.addEventListener("resize", chatHeight);
+    return () => {
+      window.removeEventListener("resize", chatHeight);
+    };
+  }, []);
+  return (
+    <div
+      id="chat-scroll"
+      className="h-full overflow-y-auto bg-chat-background "
+    >
+      {messages.map((m, index) => {
+        return (
+          <Bubble message={m} key={index} self={getRandomInt(0, 1) == 0} />
+        );
+      })}
     </div>
   );
 }

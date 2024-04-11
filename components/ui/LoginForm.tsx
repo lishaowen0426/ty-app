@@ -61,17 +61,13 @@ function FormContainer({
   );
 }
 
-function FormButton({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function FormButton(props: React.ComponentPropsWithoutRef<"button">) {
+  const { className, children, ...rest } = props;
   return (
     <Button
       className={cn(className, "border-0 text-lg text-home-form-title")}
       variant="pinkInner"
+      {...rest}
     >
       {children}
     </Button>
@@ -92,7 +88,7 @@ export function Login({
       <h1 className="mt-[20px] font-semibold text-home-form-text/80 text-2xl mb-[23px]">
         登陆
       </h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form id="login-form" onSubmit={handleSubmit(onSubmit)}>
         <FormField
           title="邮箱"
           placeholder="example@gmail.com"
@@ -107,7 +103,7 @@ export function Login({
       <button className="font-medium text-home-form-title ml-auto my-[10px]">
         忘记密码？
       </button>
-      <FormButton>登陆</FormButton>
+      <FormButton form="login-form">登陆</FormButton>
       <div className="ml-auto text-home-form-title mt-[10px] mb-[20px]">
         <span className="font-medium">尚未注册？</span>
         <button
@@ -135,14 +131,16 @@ export function SignUp({
       <h1 className="mt-[20px] font-semibold text-home-form-text/80 text-2xl mb-[23px]">
         注册
       </h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form id="signup-form" onSubmit={handleSubmit(onSubmit)}>
         <FormField
           title="邮箱"
           placeholder="example@gmail.com"
           register={register("email")}
         />
       </form>
-      <FormButton className="mt-[20px]">注册</FormButton>
+      <FormButton form="signup-form" className="mt-[20px]">
+        注册
+      </FormButton>
       <div className="ml-auto text-home-form-title mt-[10px] mb-[20px]">
         <span className="font-medium">已有账户？</span>
         <button
