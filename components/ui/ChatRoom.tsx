@@ -10,17 +10,14 @@ import { Icons } from "./icons";
 function Bubble({
   message,
   className,
-  msgKey,
   self,
 }: {
   message: string;
   className?: string;
-  msgKey: React.Key;
   self: boolean;
 }) {
   return (
     <div
-      key={msgKey}
       className={cn(
         className,
         self ? "ml-auto mr-0" : "",
@@ -109,7 +106,7 @@ export function ChatRoom(props: ChatProps) {
     >
       {messages.map((m, index) => {
         return (
-          <Bubble message={m} msgKey={index} self={getRandomInt(0, 1) == 0} />
+          <Bubble message={m} key={index} self={getRandomInt(0, 1) == 0} />
         );
       })}
     </div>

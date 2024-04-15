@@ -21,6 +21,8 @@ const HeaderButton = forwardRef(
   }
 );
 
+HeaderButton.displayName = "HeaderButton";
+
 export default function SiteHeader() {
   return (
     <header

@@ -180,4 +180,6 @@ const TopicScroll = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(
   }
 );
 
+TopicScroll.displayName = "TopicScroll";
+
 export default TopicScroll;

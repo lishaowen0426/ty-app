@@ -68,5 +68,6 @@ const IconButton = React.forwardRef<
     </button>
   );
 });
+IconButton.displayName = "IconButton";
 
 export { Button, buttonVariants, IconButton };

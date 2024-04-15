@@ -80,4 +80,8 @@ const UserAvatar = forwardRef<HTMLImageElement, UserAvatarProps>(
   }
 );
 
+AvatarContext.displayName = "AvatarContext";
+UserAvatar.displayName = "UserAvatar";
+FetchAvatar.displayName = "FetchAvatar";
+
 export { AvatarContext, UserAvatar };

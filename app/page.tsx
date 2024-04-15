@@ -11,7 +11,9 @@ export default function Home() {
         <Image
           src={avatar.src}
           alt="home avatar"
-          className="h-[380px] w-[380px] mt-[15px] mx-auto"
+          width={380}
+          height={380}
+          className="mt-[15px] mx-auto"
         />
         <h1 className="w-[11.25rem] ml-[24px] text-home-heading font-bold text-4xl mb-[20px]">
           探索你身边发生的事
