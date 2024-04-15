@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { lorem } from "@/lib/utils";
 import Link from "next/link";
 import avatar from "@/public/home-avatar.png";
@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col justify-between">
       <div className="">
-        <img
+        <Image
           src={avatar.src}
           alt="home avatar"
           className="h-[380px] w-[380px] mt-[15px] mx-auto"

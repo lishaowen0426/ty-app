@@ -45,8 +45,8 @@ const GroupAvatar = styled(Avatar)`
 const AvatarGroup = ({ url, count }: AvatarGroupProps) => {
   return (
     <div className="flex flex-row-reverse justify-end h-full">
-      {url?.map((r) => (
-        <GroupAvatar>
+      {url?.map((r, index) => (
+        <GroupAvatar key={index}>
           <AvatarImage src={r} />
         </GroupAvatar>
       ))}
@@ -167,8 +167,12 @@ const TopicScroll = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(
     return (
       <div ref={ref} {...props}>
         <div className="h-full overflow-y-auto container mt-[20px]">
-          {cards.map((r) => {
-            return <div className="my-[5px]">{r}</div>;
+          {cards.map((r, index) => {
+            return (
+              <div className="my-[5px]" key={index}>
+                {r}
+              </div>
+            );
           })}
         </div>
       </div>

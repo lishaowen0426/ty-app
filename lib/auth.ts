@@ -8,6 +8,7 @@ import { z } from "zod";
 import { use } from "react";
 import { createTransport } from "nodemailer";
 import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
