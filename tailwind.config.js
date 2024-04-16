@@ -39,6 +39,7 @@ module.exports = {
         "avatar-count": "rgb(var(--avatar-count)/<alpha-value>)",
         "light-text": "rgb(var(--light-text)/<alpha-value>)",
         "chat-background": "rgb(var(--chat-background)/<alpha-value>)",
+        "error-message": "rgb(var(--error-message)/<alpha-value>)",
       },
       borderRadius: {
         xl: `calc(var(--radius) + 4px)`,

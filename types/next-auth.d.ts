@@ -1,21 +1,16 @@
 import { DefaultSession, User as AuthUser } from "next-auth";
 import { User as PrismaUser } from "@prisma/client";
 
-type P = PrismaUser;
-type PW = "password";
+export type UserKept = "id" | "email" | "name" | "avatar";
 type PP = {
-  [Property in keyof P as Exclude<Property, "createdAt">]: Property extends PW
-    ? boolean
-    : P[Property];
+  [Property in keyof Pick<PrismaUser, UserKept>]: PrismaUser[Property];
 };
 
 declare module "next-auth" {
-  export interface User extends P {}
+  export interface User extends PP {}
   export interface Session {
     user: PP;
   }
-
-  export interface AdapterUser extends P {}
 }
 
 declare module "next-auth/jwt" {
@@ -23,5 +18,5 @@ declare module "next-auth/jwt" {
 }
 
 declare module "@auth/core/adapters" {
-  export interface AdapterUser extends P {}
+  export interface AdapterUser extends PP {}
 }

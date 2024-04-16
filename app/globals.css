@@ -36,6 +36,7 @@
     --chat-background: 243 244 249;
     --chat-bubble-self: var(--background);
     --chat-bubble-they: 255 255 255;
+    --error-message: 113 25 47;
   }
 
   .dark {
@@ -143,4 +144,14 @@ html {
 }
 .chat-bubble-they {
   background-color: rgb(var(--chat-bubble-they));
+}
+
+#login-form-error {
+  & path {
+    fill: #ef665b !important;
+  }
+}
+
+#modal-background {
+  display: block;
 }

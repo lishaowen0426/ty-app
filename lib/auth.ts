@@ -1,4 +1,5 @@
 import { User } from "next-auth";
+import { UserKept } from "@/types/next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -9,6 +10,7 @@ import prisma from "@/lib/prisma";
 import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
 import * as ErrMsg from "@/lib/errmsg";
+import { NextRequest } from "next/server";
 
 export const handlers = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -17,14 +19,14 @@ export const handlers = NextAuth({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
+        password: {
+          label: "Password",
+          type: "password",
+        },
       },
-      async authorize(credentials, req) {
-        if (
-          credentials?.email === undefined ||
-          !credentials?.password === undefined
-        ) {
-          return null;
+      async authorize(credentials) {
+        if (credentials == undefined) {
+          throw new Error(ErrMsg.INVALIDREQUEST);
         } else {
           return await login(credentials.email, credentials.password);
         }
@@ -55,8 +57,21 @@ export const handlers = NextAuth({
         //   throw new Error("Only one email allowed")
         // }
       },
-      sendVerificationRequest(params) {
+      async sendVerificationRequest(params) {
         const { identifier, url, provider, theme } = params;
+        console.log(url);
+        const exist = await prisma.user.findUnique({
+          where: {
+            email: identifier,
+          },
+          select: {
+            email: true,
+            id: true,
+          },
+        });
+        if (exist) {
+          throw new Error(ErrMsg.USEREXISTS);
+        }
 
         // NOTE: You are not required to use `nodemailer`, use whatever you want.
         const transport = createTransport({
@@ -83,10 +98,6 @@ export const handlers = NextAuth({
     // Seconds - How long until an idle session expires and is no longer valid.
     maxAge: 1 * 24 * 60 * 60, // 1 day
   },
-  pages: {
-    signIn: "/auth/signin",
-    error: "/error/auth",
-  },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       return true;
@@ -96,8 +107,7 @@ export const handlers = NextAuth({
         token.email = user.email;
         token.name = user.name;
         token.id = user.id;
-        //token.avatar = user.avatar;
-        token.password = user.password ? true : false;
+        token.avatar = user.avatar;
       }
 
       return token;
@@ -105,10 +115,8 @@ export const handlers = NextAuth({
     async session({ session, token }) {
       session.user.email = token.email ?? "";
       session.user.id = token.id;
-      //session.user.emailVerified = token.emailVerified;
-      session.user.avatar = null;
+      session.user.avatar = token.avatar;
       session.user.name = token.name ?? "";
-      session.user.password = token.password;
 
       return session;
     },
@@ -129,39 +137,30 @@ export const handlers = NextAuth({
   },
 });
 
-type LoginFn = (email: string, password: string) => Promise<User>;
-type CheckFn = (email: string) => Promise<boolean>;
+type LoginFn = (email: string, password: string) => Promise<User | null>;
 
 const login: LoginFn = async (email: string, password: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-
+  const toSeletct = {
+    id: true,
+    email: true,
+    name: true,
+    avatar: true,
+  } satisfies Record<UserKept, boolean>;
+  let user: User | null = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: {
+        email,
+        password: SHA256(password).toString(Hex),
+      },
+      select: toSeletct,
+    });
+  } catch (e) {
+    throw new Error(ErrMsg.INTERNALERROR);
+  }
   if (!user) {
-    throw new Error(ErrMsg.USERNOTFOUND);
-  }
-
-  if (!user.password) {
-    throw new Error(ErrMsg.PASSWORDNOTSET);
-  }
-  if (SHA256(password).toString(Hex) == user.password) {
-    user.password = "set";
-    return user;
-  } else throw new Error(ErrMsg.WRONGPASSWORD);
-};
-
-const checkUser: CheckFn = async (email: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-
-  if (user) {
-    return true;
+    throw new Error("用户不存在或密码错误");
   } else {
-    return false;
+    return user;
   }
 };

@@ -14,7 +14,7 @@ model User {
   password         String?
   emailVerified    DateTime?
   name             String?
-  avatar           Bytes?
+  avatar           String?
   accounts         Account[]
   sessions         Session[]
   createdTopics    Topic[]   @relation("Creator")
