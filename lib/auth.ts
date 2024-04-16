@@ -59,14 +59,13 @@ export const handlers = NextAuth({
       },
       async sendVerificationRequest(params) {
         const { identifier, url, provider, theme } = params;
-        console.log(url);
         const exist = await prisma.user.findUnique({
           where: {
             email: identifier,
           },
           select: {
-            email: true,
             id: true,
+            email: true,
           },
         });
         if (exist) {

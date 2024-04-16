@@ -233,16 +233,17 @@ export function SignUp({
     try {
       const response = await signIn("email", {
         redirect: false,
+        callbackUrl: `/profile/create?email=${data.email}`,
         email: data.email,
       });
-      console.log(response);
       if (!response) {
         return attachErr("服务器内部错误", SIGNUP_ERR, "signup-form");
       } else {
-        if (response.ok) {
-          router.push("/started/sent");
+        console.log(response.error);
+        if (response.error) {
+          attachErr("用户已存在", SIGNUP_ERR, "signup-form");
         } else {
-          attachErr(response.error || "未知错误", SIGNUP_ERR, "signup-form");
+          router.push("/started/sent");
         }
       }
     } catch (e) {

@@ -1,33 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-const getAvatar = async (id: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
-    select: {
-      avatar: true,
-    },
-  });
-  if (user && user.avatar) {
-    return user.avatar;
+export async function POST(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return Response.json({}, { status: 400 });
   } else {
-    return null;
+    return Response.json({}, { status: 200 });
   }
-};
+}
 
 export async function GET(request: NextRequest) {
-  const params = new URL(request.url).searchParams;
-  if (!params.has("user")) {
-    return new NextResponse(null, { status: 400 });
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return Response.json({}, { status: 400 });
   } else {
-    const id = params.get("user")!;
-    const avatar = await getAvatar(id);
-    if (!avatar) {
-      return new NextResponse(null, { status: 400 });
-    } else {
-      return new NextResponse(new Blob([avatar]), { status: 200 });
-    }
+    const user = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        avatar: true,
+      },
+    });
+    return Response.json({ url: user?.avatar }, { status: 200 });
   }
 }
