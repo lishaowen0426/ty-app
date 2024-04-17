@@ -1,27 +1,27 @@
 "use client";
 
-import {
-  useForm,
-  SubmitHandler,
-  UseFormRegisterReturn,
-  FieldErrors,
-  FieldValues,
-} from "react-hook-form";
+import { useForm, SubmitHandler, UseFormRegisterReturn } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Button } from "./button";
 import { StateDispatch } from "@/lib/utils";
 import { z, ZodError } from "zod";
 import { Icons } from "./icons";
-import { signIn } from "next-auth/react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { login, signup } from "@/lib/actions";
 
 const LOGIN_ERR = "login-error";
 const SIGNUP_ERR = "signup-error";
+const VERIFICATION_ERR = "verification-error";
+
+const LOGIN_FORM = "login-form";
+const SIGNUP_FORM = "signup-form";
+const VERIFICATION_FORM = "verification-form";
 
 export type SignUpValues = {
+  email: string;
+  password: string;
+};
+export type VerificationValues = {
   email: string;
 };
 
@@ -102,7 +102,14 @@ function attachErr(text: string, errId: string, formId: string) {
   const err = document.getElementById(errId)!;
   err.style.display = "block";
   err.innerText = text;
+  if (text == "请先对邮箱进行验证") {
+    err.style.width = "fit-content";
+    err.style.padding = "12px 30px";
+    err.style.backgroundColor = "rgba(255, 255,255,0.6)";
+    err.style.borderRadius = "16px";
 
+    err.addEventListener("click", function (event) {}, { once: true });
+  }
   document.getElementById(formId)!.addEventListener(
     "input",
     function (event) {
@@ -126,22 +133,11 @@ export function Login({
 
   const onSubmit: SubmitHandler<LoginValues> = async (data: LoginValues) => {
     try {
-      const response = await signIn("credentials", {
-        redirect: false,
-        password: data.password,
-        email: data.email,
-      });
-      if (!response) {
-        attachErr("服务器内部错误", LOGIN_ERR, "login-form");
-      } else {
-        if (response?.ok) {
-          router.push("/topics");
-        } else {
-          attachErr(response.error || "未知错误", LOGIN_ERR, "login-form");
-        }
-      }
+      await login(data);
     } catch (e) {
-      attachErr("服务器内部错误", LOGIN_ERR, "login-form");
+      const ee = e as Error;
+      ee.name = "";
+      attachErr(ee.toString(), LOGIN_ERR, LOGIN_FORM);
     }
   };
 
@@ -155,7 +151,7 @@ export function Login({
         className="mb-[10px] text-red-600 font-semibold text-lg hidden"
       />
 
-      <form id="login-form" onSubmit={handleSubmit(onSubmit)}>
+      <form id={LOGIN_FORM} onSubmit={handleSubmit(onSubmit)}>
         <FormField
           title="邮箱"
           placeholder="example@gmail.com"
@@ -199,7 +195,7 @@ export function Login({
       <button className="font-medium text-home-form-title ml-auto my-[10px]">
         忘记密码？
       </button>
-      <FormButton type="submit" form="login-form">
+      <FormButton type="submit" form={LOGIN_FORM}>
         登陆
       </FormButton>
       <div className="ml-auto text-home-form-title mt-[10px] mb-[20px]">
@@ -222,32 +218,16 @@ export function SignUp({
   className?: string;
   setDisplay: StateDispatch<DisplayState>;
 }) {
-  const {
-    handleSubmit,
-    register,
-    formState: { errors },
-  } = useForm<SignUpValues>();
+  const { handleSubmit, register, formState } = useForm<SignUpValues>();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<SignUpValues> = async (data: SignUpValues) => {
     try {
-      const response = await signIn("email", {
-        redirect: false,
-        callbackUrl: `/profile/create?email=${data.email}`,
-        email: data.email,
-      });
-      if (!response) {
-        return attachErr("服务器内部错误", SIGNUP_ERR, "signup-form");
-      } else {
-        console.log(response.error);
-        if (response.error) {
-          attachErr("用户已存在", SIGNUP_ERR, "signup-form");
-        } else {
-          router.push("/started/sent");
-        }
-      }
+      await signup(data);
     } catch (e) {
-      attachErr("服务器内部错误", SIGNUP_ERR, "signup-form");
+      const ee = e as Error;
+      ee.name = "";
+      attachErr(ee.toString(), SIGNUP_ERR, SIGNUP_FORM);
     }
   };
   return (
@@ -259,7 +239,7 @@ export function SignUp({
         id={SIGNUP_ERR}
         className="mb-[10px] text-red-600 font-semibold text-lg hidden"
       />
-      <form id="signup-form" onSubmit={handleSubmit(onSubmit)}>
+      <form id={SIGNUP_FORM} onSubmit={handleSubmit(onSubmit)}>
         <FormField
           title="邮箱"
           placeholder="example@gmail.com"
@@ -277,10 +257,30 @@ export function SignUp({
               }
             },
           })}
-          errorMsg={errors.email?.message}
+          errorMsg={formState.errors.email?.message}
+        />
+        <FormField
+          title="密码"
+          placeholder="长度至少为8"
+          register={register("password", {
+            required: { value: true, message: "请输入密码" },
+            validate: (v) => {
+              try {
+                z.string()
+                  .min(8, { message: "密码长度必须大于等于8并且小于等于16" })
+                  .max(16, { message: "密码长度必须大于等于8并且小于等于16" })
+                  .parse(v);
+                return true;
+              } catch (e) {
+                const issues = (e as ZodError).issues;
+                return issues[0].message;
+              }
+            },
+          })}
+          errorMsg={formState.errors.password?.message}
         />
       </form>
-      <FormButton form="signup-form" className="mt-[20px]">
+      <FormButton form={SIGNUP_FORM} className="mt-[20px]">
         注册
       </FormButton>
       <div className="ml-auto text-home-form-title mt-[10px] mb-[20px]">
@@ -292,6 +292,64 @@ export function SignUp({
           登陆
         </button>
       </div>
+    </FormContainer>
+  );
+}
+
+export function Verificatioin({
+  className,
+  setDisplay,
+}: {
+  className?: string;
+  setDisplay: StateDispatch<DisplayState>;
+}) {
+  const { handleSubmit, register, formState } = useForm<VerificationValues>();
+  const router = useRouter();
+
+  const onSubmit: SubmitHandler<VerificationValues> = async (
+    data: VerificationValues
+  ) => {
+    try {
+    } catch (e) {
+      const ee = e as Error;
+      ee.name = "";
+      attachErr(ee.toString(), SIGNUP_ERR, "signup-form");
+    }
+  };
+  return (
+    <FormContainer className={className}>
+      <h1 className="mt-[20px] font-semibold text-home-form-text/80 text-2xl mb-[23px]">
+        验证邮箱
+      </h1>
+      <p
+        id={VERIFICATION_ERR}
+        className="mb-[10px] text-red-600 font-semibold text-lg hidden"
+      />
+      <form id={VERIFICATION_FORM} onSubmit={handleSubmit(onSubmit)}>
+        <FormField
+          title="邮箱"
+          placeholder="example@gmail.com"
+          register={register("email", {
+            required: { value: true, message: "请输入邮箱" },
+            validate: (v) => {
+              try {
+                z.string()
+                  .email({ message: "请输入格式正确的邮箱地址" })
+                  .parse(v);
+                return true;
+              } catch (e) {
+                const issues = (e as ZodError).issues;
+                return issues[0].message;
+              }
+            },
+          })}
+          errorMsg={formState.errors.email?.message}
+        />
+      </form>
+      <FormButton form={VERIFICATION_FORM} className="mt-[20px]">
+        发送链接
+      </FormButton>
+      <FormButton className="mt-[20px]">返回</FormButton>
     </FormContainer>
   );
 }

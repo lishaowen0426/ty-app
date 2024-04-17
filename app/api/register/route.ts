@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
 

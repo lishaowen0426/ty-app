@@ -1,12 +1,13 @@
 import { User } from "next-auth";
 import { UserKept } from "@/types/next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { User as PrismaUser } from "@prisma/client";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import EmailProvider from "next-auth/providers/email";
 
 import { createTransport } from "nodemailer";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
 import * as ErrMsg from "@/lib/errmsg";
@@ -24,7 +25,7 @@ export const handlers = NextAuth({
           type: "password",
         },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (credentials == undefined) {
           throw new Error(ErrMsg.INVALIDREQUEST);
         } else {
@@ -163,3 +164,6 @@ const login: LoginFn = async (email: string, password: string) => {
     return user;
   }
 };
+
+/*######################*/
+export type JWTPayload = Pick<PrismaUser, "id" | "email" | "avatar" | "name">;
