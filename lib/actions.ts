@@ -1,10 +1,9 @@
 "use server";
 import type { SignUpValues, LoginValues } from "@/components/ui/LoginForm";
-import { reverificationMsg } from "@/components/ui/LoginForm";
 import { JWTPayload } from "./auth";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import { prisma, redis } from "./db";
+import { prisma, redis } from "@/lib/db";
 import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
 import { redirect } from "next/navigation";
@@ -19,7 +18,7 @@ const host = (process.env.VERCEL_URL ?? process.env.NEXTAUTH_URL)!;
 
 const nodeMailerOpt = {
   host: process.env.EMAIL_SERVER_HOST,
-  port: process.env.EMAIL_SERVER_PASSWORD,
+  port: Number(process.env.EMAIL_SERVER_PASSWORD),
   secure: false,
   auth: {
     user: process.env.EMAIL_SERVER_USER,

@@ -10,7 +10,6 @@ const prismaClientSingleton = () => {
 const redisClientSignleton = () => {
   const client = createClient({
     url: process.env.REDIS_URL,
-    connectTimeout: 10000, // in 10secs
   });
   client
     .connect()

@@ -35,7 +35,7 @@ const createUser = async (count: number) => {
         email: `${name}${EMAIL_HOST}`,
         password: `${SHA256("123456")}`,
         name: name,
-        emailVerified: new Date(),
+        emailVerified: true,
       },
     });
   }
