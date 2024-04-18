@@ -7,7 +7,7 @@ import { Button } from "./button";
 import { StateDispatch } from "@/lib/utils";
 import { z, ZodError } from "zod";
 import { Icons } from "./icons";
-import { login, signup } from "@/lib/actions";
+import { login, signup, reVerify } from "@/lib/actions";
 
 const LOGIN_ERR = "login-error";
 const SIGNUP_ERR = "signup-error";
@@ -98,7 +98,12 @@ function FormButton(props: React.ComponentPropsWithoutRef<"button">) {
   );
 }
 
-function attachErr(text: string, errId: string, formId: string) {
+function attachErr(
+  text: string,
+  errId: string,
+  formId: string,
+  email?: string
+) {
   const err = document.getElementById(errId)!;
   err.style.display = "block";
   err.innerText = text;
@@ -108,7 +113,13 @@ function attachErr(text: string, errId: string, formId: string) {
     err.style.backgroundColor = "rgba(255, 255,255,0.6)";
     err.style.borderRadius = "16px";
 
-    err.addEventListener("click", function (event) {}, { once: true });
+    err.addEventListener(
+      "click",
+      function (event) {
+        reVerify(email!);
+      },
+      { once: true }
+    );
   }
   document.getElementById(formId)!.addEventListener(
     "input",
@@ -137,7 +148,7 @@ export function Login({
     } catch (e) {
       const ee = e as Error;
       ee.name = "";
-      attachErr(ee.toString(), LOGIN_ERR, LOGIN_FORM);
+      attachErr(ee.toString(), LOGIN_ERR, LOGIN_FORM, data.email);
     }
   };
 

@@ -13,6 +13,7 @@ import { randomBytes } from "crypto";
 
 const secretKey = process.env.JWT_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
+const SESSION_DURATION = 1 * 24 * 60 * 60 * 1000;
 
 const host = (process.env.VERCEL_URL ?? process.env.NEXTAUTH_URL)!;
 
@@ -33,16 +34,23 @@ transporter.verify((error, success) => {
     console.log(error);
   }
 });
-const sendEmailVerification = (user: JWTPayload, token: string) => {
+const sendEmailVerification = async (email: string) => {
+  const token = randomBytes(48).toString("hex");
+  await redis.SET(email, token);
+  await redis.EXPIRE(email, 30 * 60 /*30min*/);
+
+  const url = `${host}/api/register/verify?email=${email}&&token=${token}`;
   transporter.sendMail({
-    to: user.email,
+    to: email,
     from: process.env.EMAIL_FROM,
     subject: "登陆到Distance",
-    text: `${host}/api/register/verify?email=${user.email}&&token=${token}`,
+    html: `<p>${url}</p><p>30分钟内有效</p>`,
+    text: `${url}\n 30分钟内有效`,
   });
 };
 
-const createJWSAndCookie = async (payload: JWTPayload, expireAt: Date) => {
+export const createJWSAndCookie = async (payload: JWTPayload) => {
+  const expireAt = new Date(Date.now() + SESSION_DURATION); // 1 days
   const jws = await new SignJWT(payload)
     .setProtectedHeader({
       alg: "HS256",
@@ -95,26 +103,25 @@ export async function login(data: LoginValues) {
 
   const { emailVerified, ...userPayload } = user;
 
-  const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 days
-  await createJWSAndCookie(userPayload, expiresAt);
+  await createJWSAndCookie(userPayload);
   redirect("/topics");
 
   //generate JWS
 }
 export async function signup(data: SignUpValues) {
-  let user: (JWTPayload & { emailVerified: boolean }) | null = null;
+  let user: JWTPayload | null = null;
   try {
     user = await prisma.user.create({
       data: {
         email: data.email,
         password: SHA256(data.password).toString(Hex),
+        emailVerified: false,
       },
       select: {
         id: true,
         name: true,
         email: true,
         avatar: true,
-        emailVerified: true,
       },
     });
   } catch (e) {
@@ -126,11 +133,14 @@ export async function signup(data: SignUpValues) {
     throw new Error("服务器内部错误");
   }
 
-  const { emailVerified, ...userPayload } = user;
+  sendEmailVerification(user.email);
 
-  const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 days
-  await createJWSAndCookie(userPayload, expiresAt);
-  sendEmailVerification(userPayload, randomBytes(48).toString("hex"));
+  redirect("/info/sent");
+}
 
-  redirect("/started/email/sent");
+export async function signout() {}
+
+export async function reVerify(email: string) {
+  await sendEmailVerification(email);
+  redirect("/info/sent");
 }
